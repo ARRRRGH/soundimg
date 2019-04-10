@@ -14,8 +14,8 @@
 conda env create --name soundimg -f=environment.yml
 
 ## Link modules gi and cairo to conda environment
-	ln -s /usr/local/lib/python3.6/site-packages/cairo path_to_your_anaconda_dir/envs/soundimg_new/lib/python3.6/site-packages/
-	ln -s /usr/local/lib/python3.6/site-packages/gi path_to_your_anaconda_dir/envs/soundimg_new/lib/python3.6/site-packages/
+	ln -s /usr/local/lib/python3.6/site-packages/cairo path_to_your_anaconda_dir/envs/soundimg/lib/python3.6/site-packages/
+	ln -s /usr/local/lib/python3.6/site-packages/gi path_to_your_anaconda_dir/envs/soundimg/lib/python3.6/site-packages/
 
 
 ## Start soundimg
