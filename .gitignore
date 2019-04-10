@@ -64,3 +64,5 @@ gui/glade/soundimg\.glade~
 \.DS_Store
 
 soundimg\.iml
+
+\.idea/
