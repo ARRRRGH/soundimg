@@ -10,7 +10,9 @@ from abc import ABCMeta, abstractmethod
 
 class BrushMode(data_utils.StoreInterface):
     """
-    Interface for classes eligible to be managed by a ui.gtk_utils.Store
+    Interface for Brush Modes.
+
+    A Brush Mode implements the logic the apply method of Brush.
     """
     __metaclass__ = ABCMeta
 
@@ -29,6 +31,8 @@ class BrushMode(data_utils.StoreInterface):
 
 
 class SubtractMode(BrushMode):
+    """ Subtract without reweighing canvas image."""
+
     def __init__(self):
         BrushMode.__init__(self)
 
@@ -72,6 +76,7 @@ class SubtractMode(BrushMode):
 
 
 class NegativeMixingMode(BrushMode):
+    """ Subtract from reweighed canvas image. """
     def __init__(self):
         BrushMode.__init__(self)
 
@@ -115,6 +120,8 @@ class NegativeMixingMode(BrushMode):
 
 
 class AdditiveMixingMode(BrushMode):
+    """ Add to reweighed canvas image. """
+
     def __init__(self):
         BrushMode.__init__(self)
 
@@ -158,6 +165,8 @@ class AdditiveMixingMode(BrushMode):
 
 
 class AddMode(BrushMode):
+    """ Add without reweighing canvas image. """
+
     def __init__(self):
         BrushMode.__init__(self)
 
