@@ -11,7 +11,7 @@ class Graph(data_utils.StoreInterface):
     """
     Class used to store and manage information about a graph, that is of a mapping xs -> ys.
     Instances can be set is_settable = True if data need to be changed and is_settable = False if the data needs to be
-    protected.
+    protected from changes.
     If is_raw_data = False, instances return an interpolation on calling get. The interpolation data is hold and updated on
     change in the data. To enable the interpolation, instances with is_raw_data = False must be set a x-value array with
     set_interpolation_xs.
@@ -222,6 +222,7 @@ class Limiter(Graph):
     """
     A graph with x-values ranging from 0 to 1 with raw_data = False. The interpolation has a lower bound at 0.
     """
+
     def __init__(self, length, *args, **kwargs):
         # gtk_utils.GtkListener.__init__(self)
         Graph.__init__(self, np.ones(length), np.linspace(0, 1, length), *args, **kwargs)
@@ -259,6 +260,10 @@ class Limiter(Graph):
 
 
 class Fader(Graph):
+    """ A graph of variable size < samples_per_px to represent fades, that is the volume upon change in
+    intensity in synth. The upper limit to the size is due to the implementation of the synth, but this will change
+    in the future. """
+
     def __init__(self, length, fade_in=True, *args, **kwargs):
         if fade_in:
             ys = np.linspace(0, 1, length)
@@ -290,7 +295,7 @@ class Fader(Graph):
 
 class FrequencyMap(Graph):
     """
-    A map from px in y direction to frequency . Traditional as well as arbitrary tonal systems can be implemented by
+    A map from px in y direction to frequency. Traditional as well as arbitrary tonal systems can be implemented by
     FrequencyMap.
 
     Default (fixed) maps are best implemented by deriving from FrequencyMap, defining first the map in the constructor,
