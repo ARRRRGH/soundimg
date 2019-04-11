@@ -6,7 +6,13 @@ import data_structures.data_utils as data_utils
 import numpy as np
 import copy
 
+
 class Instrument(data_utils.StoreInterface):
+    """ Instruments hold and update the data and specifications necessary for phase translation in synth.
+
+    In the moment, Instrument holds a wave table, a timbre object and faders. Other objects might be contained in the
+    future."""
+
     def __init__(self, wtab):
         # gtk_utils.GtkListener.__init__(self)
 
@@ -129,11 +135,8 @@ class Instrument(data_utils.StoreInterface):
 
 
 class FrequencyMapTuple(object):
-    """
-    The mapping from px in y-direction to frequency implemented by one FrequencyMap can be shifted dynamically between
-    two mappings following a specified transition.
-
-    A tuple can consist of only one map, too. In this case, there is no transition.
+    """ FrequencyMapTuple assembles an arbitrary number of FrequencyMaps to a new FrequencyMap connecting them
+    by a specified transition.
 
     FrequencyMapTuple stores the last returned frequency map, such that it must only be recalculated when either
     start_map or end_map change.
@@ -278,6 +281,18 @@ class FrequencyMapArray(data_utils.StoreInterface):
 
 
 class Timbre(data_utils.StoreInterface):
+    """ Timbre holds all details to modulate the phase-to-wavetable translation and transforms them to a form usable
+    for the Synthesizer.
+
+
+
+    In the moment amplitude modulation specifies
+        amplitude and frequency modulation amplitude and frequency (ama, fma, amf, fmf)
+        harmonic
+        shift
+    which are stored in form of a np.array. Multiple timbres can be overlayed for the same track.
+    """
+
     def __init__(self):
         # columns: weight, ama, amf, harmonic, fma, fmf, shift
         self.nr_timbre_params = 7
