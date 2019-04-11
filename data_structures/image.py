@@ -8,6 +8,11 @@ import copy
 
 
 class Image(object):
+    """ Image is the actual container for images.
+
+    Image holds and manages the image in form of a np.array. It is aware of the changes applied to the array until
+    set_state(0, range_) is called."""
+
     def __init__(self, dims=None, img_path=None, img=None):
         # gtk_utils.GtkListener.__init__(self)
 
@@ -129,6 +134,11 @@ class Image(object):
 
 
 class PlayableImage(object):
+    """ Interface of an Image to a TrackGenerator.
+
+    PlayableImage provides the methods necessary for TrackGenerator to operate on an Image.
+    """
+
     def __init__(self, track, *args, **kwargs):
         self.track = track
         self.image = track.image
