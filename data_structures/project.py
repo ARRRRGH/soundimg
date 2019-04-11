@@ -14,6 +14,8 @@ import os
 
 
 class Project(object):
+    """ Project holds run time data and parameters of a project. """
+
     def __init__(self):
         self.params = ProjectParams()
         self.data = ProjectData()
@@ -50,6 +52,8 @@ class Project(object):
 
 
 class ProjectData(object):
+    """ ProjectData holds all the data necessary at run time, i.e. it holds and manages the tracks. """
+
     def __init__(self):
         self.tracks = []
 
@@ -68,11 +72,18 @@ class ProjectData(object):
 
 
 class ProjectParams(object):
+    """ ProjectParams holds a project's parameters.
+
+    In the moment all the parameters are packed in SoundGenParams. This might change in the future.
+    """
+
     def __init__(self):
         self.sound_gen_params = SoundGenParams(config.params.image_width)
 
 
 class Track(object):
+    """ A track object holds an image, a limiter, an instrument and a frequency map. """
+
     def __init__(self, params, imag=None, dims=None, limiter=None, instrument=None, freq_map_array=None):
         # gtk_utils.GtkListener.__init__(self)
 
@@ -138,6 +149,9 @@ class Track(object):
 
 
 class SoundGenParams(object):
+    """ SoundGenParams holds the parameters necessary to synthesize sound at run time. It is responsible for their
+    consistency."""
+
     def __init__(self, len):
         """
         Class holding parameters relevant to the sound generation from view.
