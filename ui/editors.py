@@ -583,7 +583,7 @@ class _BrushEditor(Gtk.VBox):
         self.brush_editor_blur_scale.set_increments(0.1, 0.01)
 
         # add editor preview to brush_store as a brush
-        editor_brush = brush.EditorBrush(lambda: self.canvas.imag.img, np.ones(self.canvas.imag.shape))
+        editor_brush = brush.EditorBrush(self.canvas.imag.img, np.ones(self.canvas.imag.shape))
         config.brush_store.add_to_store(editor_brush, '<editor>', protected=False)
 
         self.update_brush_scale_ranges()
@@ -609,7 +609,7 @@ class _BrushEditor(Gtk.VBox):
             active_brush.apply(center, self.canvas.imag)
 
         # reset <editor> brush
-        new_editor_brush = brush.EditorBrush(lambda: self.canvas.imag.img, np.ones(self.canvas.imag.shape))
+        new_editor_brush = brush.EditorBrush(self.canvas.imag.img, np.ones(self.canvas.imag.shape))
         config.brush_store.replace(config.brush_store['<editor>'], new_editor_brush)
 
         self.canvas.redraw()

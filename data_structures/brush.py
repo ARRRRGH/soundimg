@@ -8,19 +8,9 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 
 
-class SingleColorBrush(object):
-    """
-    Brushes of a single color should derive from this class. The abstract method set_color is used by menus implementing
-    a color choice of the user.
-    """
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def set_color(self, color): raise NotImplementedError
-
-
 class Brush(data_utils.StoreInterface):
-    """
+    """ Object that can apply a color or an other image to an image.
+
     Any brush must derive from this abstract class. A brush consists in two arrays representing the colors and weights
     of a certain shape. These two arrays are used for the application of the brush to an image by a function defined by
     mode.
@@ -263,10 +253,11 @@ class Brush(data_utils.StoreInterface):
         self.set_axis_modes(axis_modes)
 
     def set_weights(self, weights):
-        self.weights = weights
+        raise NotImplementedError
 
+    @abstractmethod
     def set_color(self, color):
-        self.colors = color
+        raise NotImplementedError
 
     def duplicate(self):
         """
@@ -287,6 +278,8 @@ class Brush(data_utils.StoreInterface):
 
 
 class PaintedBrush(Brush):
+    """ A brush holding permanently an image.
+    """
     def __init__(self, orig_weights, orig_colors, *args, **kwargs):
         Brush.__init__(self, *args, **kwargs)
         self.orig_weights = orig_weights
@@ -321,6 +314,8 @@ class PaintedBrush(Brush):
     def set_weights(self, weight):
         self.weight = weight
 
+    def set_color(self, color):
+        pass
 
     def __getstate__(self):
         return self._current_shape, self.mode, self.orig_weights, self.orig_colors, self.axis_modes
@@ -330,8 +325,11 @@ class PaintedBrush(Brush):
 
 
 class EditorBrush(PaintedBrush):
-    def __init__(self, img_updater, orig_weights, *args, **kwargs):
-        self.img_updater = img_updater
+    """ EditorBrush behaves like a PaintedBrush with the exception that the brush's image is up to date
+    when changed.
+    """
+    def __init__(self, img, orig_weights, *args, **kwargs):
+        self.img_updater = lambda: img
         self.orig_colors = self.img_updater()
         PaintedBrush.__init__(self, orig_weights, self.orig_colors,
                               mode=config.brush_mode_store['Additive Mixing'],*args, **kwargs)
@@ -345,9 +343,8 @@ class EditorBrush(PaintedBrush):
         return PaintedBrush(self.orig_weights.copy(), self.orig_colors.copy())
 
 
-class Rectangle(Brush, SingleColorBrush):
-    """
-    A rectangular, single-colored brush
+class Rectangle(Brush):
+    """ Rectangular, single-colored brush
     """
     def __init__(self, *args, **kwargs):
         Brush.__init__(self, *args, **kwargs)
