@@ -8,6 +8,7 @@ import numpy as np
 
 
 class InitialConditions(object):
+    """ Class the initial conditions for the phase calculation in synth. """
     def __init__(self, img_shape, track):
 
         self.shape = img_shape
@@ -85,6 +86,8 @@ class InitialConditions(object):
 
 
 class Buffer(object):
+    """ Buffer is a one-dimensional array holding and managing a piece of sound in wav format. """
+
     def __init__(self, channels, length, dtype, shared):
         self.channels = channels
         assert self.channels == 1 or self.channels == 2
