@@ -7,6 +7,8 @@ import numpy as np
 
 from abc import ABCMeta, abstractmethod
 
+class OutOfBoundsException(Exception):
+    pass
 
 class Brush(data_utils.StoreInterface):
     """ Object that can apply a color or an other image to an image.
@@ -186,7 +188,8 @@ class Brush(data_utils.StoreInterface):
         ymin = self._set_in_boundaries(y - np.floor(s[0] / 2.), img.shape[0])
         ymax = self._set_in_boundaries(y + np.ceil(s[0] / 2.), img.shape[0])
 
-        assert not (xmin == xmax or ymin == ymax), 'xmin == xmax or ymin == ymax'
+        if (xmin == xmax or ymin == ymax):
+            raise OutOfBoundsException('xmin == xmax or ymin == ymax')
 
         return xmin, xmax, ymin, ymax
 
@@ -413,10 +416,16 @@ class Repeater(py_utils.ObjectWrapper):
             event = [y_init, x_init]
             for i in range(self.nr_repetitions):
                 event[0] = y_init + i * self.spacing + i * self.weights.shape[0]
-                self.repeated_brush.apply(event, imag)
+                if event[0] < imag.shape[0]:
+                    self.repeated_brush.apply(event, imag)
+                else:
+                    break
 
         if self.x_axis_repeated:
             event = [y_init, x_init]
             for i in range(self.nr_repetitions):
                 event[1] = x_init + i * self.spacing + i * self.weights.shape[1]
-                self.repeated_brush.apply(event, imag)
+                if event[1] < imag.shape[1]:
+                    self.repeated_brush.apply(event, imag)
+                else:
+                    break
