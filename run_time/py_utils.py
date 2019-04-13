@@ -126,10 +126,36 @@ class ObjectWrapper(object):
         return getattr(self._wrapped_obj, attr)
 
 
-class PILInterface(object):
-    @staticmethod
-    def blur(img, scale_value):
-        return np.ravel(np.array(PIL.Image.fromarray(img).filter(PIL.ImageFilter.GaussianBlur(scale_value))))
+class ImageHandler(object):
+    PILdic = {'gaussian_blur': PIL.ImageFilter.GaussianBlur,
+              'min_filter': PIL.ImageFilter.MinFilter,
+              'max_filter': PIL.ImageFilter.MaxFilter,
+              'median_filter': PIL.ImageFilter.MedianFilter,
+              'mode_filter': PIL.ImageFilter.MedianFilter}
+
+    SCIPYdic = {'1d_blur': scp_filters.gaussian_filter1d,
+                'laplace': scp_filters.laplace}
+
+    @classmethod
+    def get_support(cls):
+        return list(cls.PILdic.items()) + list(cls.SCIPYdic.items())
+
+    @classmethod
+    def get_support_keys(cls):
+        return list(cls.PILdic) + list(cls.SCIPYdic)
+
+    @classmethod
+    def blur(cls, img, size, typ='gaussian_blur'):
+        cls.Filter(typ, img, size)
+
+    @classmethod
+    def Filter(cls, filt, img, size, axis=0, mode='const', cval=0):
+        if filt in cls.PILdic:
+            return np.ravel(np.array(PIL.Image.fromarray(img).filter(cls.PILdic[filt](size))))
+        elif filt is '1d_blur':
+            return np.ravel(cls.SCIPYdic['1d_blur'](img, size, axis=axis, mode=mode, cval=cval))
+        elif filt is 'laplace':
+            return np.ravel(cls.SCIPYdic['laplace'](img, mode=mode, cval=cval))
 
     @staticmethod
     def resize(arr, new_shape):
