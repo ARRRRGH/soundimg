@@ -656,10 +656,8 @@ class _BrushEditor(Gtk.VBox):
 
     def on_blur_scale_value_changed(self, source):
         scale_value = int(self.brush_editor_blur_scale.get_value())
-        # self.canvas.imag.img[self.canvas.current_selection] = np.ravel(cv2.blur(self.canvas.imag.img,
-        #                                                                         (scale_value, scale_value)))
-        self.canvas.imag.img[self.canvas.current_selection] = np.ravel(np.array(PIL.Image.fromarray(
-            self.canvas.imag.img).filter(ImageFilter.GaussianBlur(scale_value))))
+
+        self.canvas.imag.img[self.canvas.current_selection] = py_utils.PILInterface.blur(self.canvas.imag.img, scale_value)
         self.canvas.refresh()
 
     def on_y_dim_entry_changed(self, source):

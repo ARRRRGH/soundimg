@@ -126,5 +126,11 @@ class ObjectWrapper(object):
         return getattr(self._wrapped_obj, attr)
 
 
-def resize(arr, new_shape):
-    return np.array(PIL.Image.fromarray(arr).resize(new_shape, resample=PIL.Image.NEAREST))
+class PILInterface(object):
+    @staticmethod
+    def blur(img, scale_value):
+        return np.ravel(np.array(PIL.Image.fromarray(img).filter(PIL.ImageFilter.GaussianBlur(scale_value))))
+
+    @staticmethod
+    def resize(arr, new_shape):
+        return np.array(PIL.Image.fromarray(arr).resize(new_shape, resample=PIL.Image.NEAREST))

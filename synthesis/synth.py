@@ -130,8 +130,8 @@ class Synthesizer(object):
         #                                   freq_spectr_px.shape[0]),
         #                                  interpolation=cv2.INTER_AREA)
 
-        freq_spectr_samples = py_utils.resize(freq_spectr_px,
-                                              (freq_spectr_px.shape[1] * self.params.samples_per_px,
+        freq_spectr_samples = py_utils.PILInterface.resize(freq_spectr_px,
+                                                           (freq_spectr_px.shape[1] * self.params.samples_per_px,
                                                freq_spectr_px.shape[0]))
 
         freqs_samples = self.freq_map_array.get_freqs(self.params.samples_per_px)[:, sample_range_in]

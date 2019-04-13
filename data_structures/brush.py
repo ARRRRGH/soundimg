@@ -305,8 +305,8 @@ class PaintedBrush(Brush):
 
     def update(self, imag, shape=None, ret=False):
         s = self._get_shape_from_image(imag)
-        self.weights = py_utils.resize(self.orig_weights * self.weight, (s[1], s[0]))
-        self.colors = py_utils.resize(self.orig_colors, (s[1], s[0]))
+        self.weights = py_utils.PILInterface.resize(self.orig_weights * self.weight, (s[1], s[0]))
+        self.colors = py_utils.PILInterface.resize(self.orig_colors, (s[1], s[0]))
 
     def get_preview(self, dims):
         from data_structures import imaging
