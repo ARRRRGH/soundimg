@@ -3,7 +3,7 @@ from numba import jit
 
 import data_structures.graph as graph
 
-N = 1000000
+N = 10000
 
 
 class WaveTable(graph.Graph):

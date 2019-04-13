@@ -113,10 +113,6 @@ class Instrument(data_utils.StoreInterface):
     def get_preview(self, dims):
         return self.wave_table.get_preview(dims)
 
-    def update(self):
-        self.update_wav_table()
-        self.update_fade_arrs()
-
     def remove_constituent(self, constituent):
         for opt_name, opt in self.wav_table_options.items():
             if opt_name == 'constituents':
