@@ -256,7 +256,7 @@ class SignalManager(object):
                 tmp.append(connection)
         self._connections = tmp
         self._signals = [(name, s) for name, s in self._signals if s != source]
-        self._sources = {key: s for key, s in self._sources.iteritems() if s != source}
+        self._sources = {key: s for key, s in self._sources.items() if s != source}
 
     def clear_from_key(self, key):
         self.clear_from_source(self._sources[key])
