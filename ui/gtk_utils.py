@@ -75,54 +75,27 @@ UpdatedLabel = get_updated_gtk_class('UpdatedLabel', Gtk.Label)
 UpdatedEntry = get_updated_gtk_class('UpdatedEntry', Gtk.Entry)
 
 
-class Store(_IdleObject):
-
+class BaseStore(_IdleObject):
     __gsignals__ = {'error': (GObject.SignalFlags.RUN_LAST, None, [GObject.TYPE_STRING]),
                     'info': (GObject.SignalFlags.RUN_LAST, None, [GObject.TYPE_STRING])}
 
-    def __init__(self, name, storage_dir, ext, typ, loading_dirs=None, protected_names=None):
+    def __init__(self, typ, store=None, protected_names=None):
         _IdleObject.__init__(self)
 
         self.typ = typ
-        if not issubclass(typ, data_utils.StoreInterface): raise Exception('type specified in kwarg typ must implement '
-                                                                'the StoreInterface')
+
+        self._protected_names = protected_names
+        if protected_names is None:
+            self._protected_names = []
+        self._protected_names.append('')
 
         self.gtk_store = Gtk.ListStore(str)
         self.dict = data_utils.UniqueDict()
         self.iter_name = {}
 
-        self.loading_dirs = []
-        if loading_dirs is not None:
-            self.loading_dirs = loading_dirs
-
-        self.storage_dir = storage_dir
-        if storage_dir is not None:
-            self.loading_dirs.append(storage_dir)
-        self.ext = ext
-
-        self.name = name
-
-        self._protected_names = protected_names
-        if protected_names is None:
-            self._protected_names = []
-
-        self._protected_names.append('')
-
-        self.load()
-
-    def load(self):
-        for dir in self.loading_dirs:
-            for root, dirs, files in os.walk(dir):
-                for file in files:
-                    if file.endswith(self.ext):
-                        try:
-                            with open(os.path.join(root, file), 'rb') as f:
-                                item = pkl.load(f)
-                            name = os.path.splitext(file)[0]
-                            self.add_to_store(item, name, False)
-                        except EOFError as e:
-                            print(e)
-                            pass
+        if store is not None:
+            for item, name in store:
+                self.add_to_store(item, name)
 
     @property
     def length(self):
@@ -146,6 +119,54 @@ class Store(_IdleObject):
 
     def __setitem__(self, name, item):
         self.add_to_store(item, name)
+
+    def replace(self, item_or_name, new_item_or_name):
+        item = self.dict.get_inv_key(item_or_name)
+        name = self.dict.get_key(item_or_name)
+
+        protected = False
+        if name in self._protected_names:
+            protected = True
+
+        if self.dict.is_key(item_or_name):
+            self.remove(name)
+            self.add_to_store(item, new_item_or_name, protected=protected)
+        elif self.dict.is_inv_key(item_or_name):
+            self.remove(name)
+            self.add_to_store(new_item_or_name, name, protected=protected)
+
+
+class FileStore(BaseStore):
+    def __init__(self, storage_dir, ext, typ, store=None, loading_dirs=None, protected_names=None):
+        BaseStore.__init__(self, typ, store=store, protected_names=protected_names)
+
+        if not issubclass(self.typ, data_utils.StoreInterface):
+            raise Exception('type specified in kwarg typ must implement the StoreInterface')
+
+        self.loading_dirs = []
+        if loading_dirs is not None:
+            self.loading_dirs = loading_dirs
+
+        self.storage_dir = storage_dir
+        if storage_dir is not None:
+            self.loading_dirs.append(storage_dir)
+        self.ext = ext
+
+        self.load()
+
+    def load(self):
+        for dir in self.loading_dirs:
+            for root, dirs, files in os.walk(dir):
+                for file in files:
+                    if file.endswith(self.ext):
+                        try:
+                            with open(os.path.join(root, file), 'rb') as f:
+                                item = pkl.load(f)
+                            name = os.path.splitext(file)[0]
+                            self.add_to_store(item, name, False)
+                        except EOFError as e:
+                            print(e)
+                            pass
 
     def save(self, item, name, parent=None):
         if name in self._protected_names:
@@ -199,21 +220,6 @@ class Store(_IdleObject):
 
     def get_path(self, name):
         return os.path.join(self.storage_dir, name + '.' + self.ext)
-
-    def replace(self, item_or_name, new_item_or_name):
-        item = self.dict.get_inv_key(item_or_name)
-        name = self.dict.get_key(item_or_name)
-
-        protected = False
-        if name in self._protected_names:
-            protected = True
-
-        if self.dict.is_key(item_or_name):
-            self.remove(name)
-            self.add_to_store(item, new_item_or_name, protected=protected)
-        elif self.dict.is_inv_key(item_or_name):
-            self.remove(name)
-            self.add_to_store(new_item_or_name, name, protected=protected)
 
 
 class ListenedValue(GtkListener):

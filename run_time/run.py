@@ -284,18 +284,19 @@ class AppWindow(Gtk.ApplicationWindow):
         return proj
 
     def load_brush_modes(self):
-        brush_mode_store = gtk_utils.Store('Brush Modes', storage_dir=None, ext=None, typ=brush_modes.BrushMode)
+        brush_mode_store = gtk_utils.FileStore(storage_dir=None, ext=None, typ=brush_modes.BrushMode)
         config.brush_mode_store = brush_mode_store
 
         config.brush_mode_store.add_to_store(brush_modes.AddMode(), 'Add', protected=True)
         config.brush_mode_store.add_to_store(brush_modes.AdditiveMixingMode(), 'Additive Mixing', protected=True)
         config.brush_mode_store.add_to_store(brush_modes.SubtractMode(), 'Subtract', protected=True)
         config.brush_mode_store.add_to_store(brush_modes.NegativeMixingMode(), 'Negative Mixing', protected=True)
+        config.brush_mode_store.add_to_store(brush_modes.FilterMode(), 'Filter', protected=True)
 
     def load_brushes(self, proj_dir):
         # add basic brushes
-        brush_store = gtk_utils.Store('Brushes', storage_dir=os.path.join(proj_dir, 'data/brushes'),
-                                      ext='brush', typ=brush.Brush)
+        brush_store = gtk_utils.FileStore(storage_dir=os.path.join(proj_dir, 'data/brushes'), ext='brush',
+                                          typ=brush.Brush)
         config.brush_store = brush_store
 
         add_mode = config.brush_mode_store['Add']
@@ -304,8 +305,8 @@ class AppWindow(Gtk.ApplicationWindow):
         config.brush_store.add_to_store(brush.Rectangle(add_mode), 'Rectangle', protected=True)
 
     def load_instruments(self, proj_dir):
-        instrument_store = gtk_utils.Store('Instruments', storage_dir=os.path.join(proj_dir, 'data/instruments'),
-                                           ext='instrument', typ=sound.Instrument)
+        instrument_store = gtk_utils.FileStore(storage_dir=os.path.join(proj_dir, 'data/instruments'),
+                                               ext='instrument', typ=sound.Instrument)
         config.instrument_store = instrument_store
 
         sine = config.wave_tables_store['Sine']
@@ -313,8 +314,8 @@ class AppWindow(Gtk.ApplicationWindow):
 
 
     def load_wave_tables(self, proj_dir):
-        wave_tables_store = gtk_utils.Store('Wave Tables', storage_dir=os.path.join(proj_dir, 'data/wave_tables'),
-                                            ext='wavetable', typ=wav_tables.WaveTable)
+        wave_tables_store = gtk_utils.FileStore(storage_dir=os.path.join(proj_dir, 'data/wave_tables'),
+                                                ext='wavetable', typ=wav_tables.WaveTable)
         config.wave_tables_store = wave_tables_store
 
         sine = wav_tables.Sine()
@@ -325,15 +326,14 @@ class AppWindow(Gtk.ApplicationWindow):
 
 
     def load_freq_mappings(self, proj_dir):
-        freq_mappings_store = gtk_utils.Store('Frequency Mappings',
-                                              storage_dir=os.path.join(proj_dir, 'data/freq_mappings'),
-                                              ext='freq_mapping', typ=sound.FrequencyMapArray)
+        freq_mappings_store = gtk_utils.FileStore(storage_dir=os.path.join(proj_dir, 'data/freq_mappings'),
+                                                  ext='freq_mapping', typ=sound.FrequencyMapArray)
         config.freq_mappings_store = freq_mappings_store
 
 
     def load_modulations(self, proj_dir):
-        modulation_store = gtk_utils.Store('Modulations', storage_dir=os.path.join(proj_dir, 'data/modulations'),
-                                           ext='modulation', typ=sound.Timbre)
+        modulation_store = gtk_utils.FileStore(storage_dir=os.path.join(proj_dir, 'data/modulations'),
+                                               ext='modulation', typ=sound.Timbre)
         config.modulation_store = modulation_store
 
 
