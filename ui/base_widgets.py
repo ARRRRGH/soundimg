@@ -187,7 +187,7 @@ class FocusScrolledWindow(Gtk.ScrolledWindow):
 
 
 class StoreComboBox(Gtk.Box):
-    def __init__(self, store, info_button=False, *args, **kwargs):
+    def __init__(self, store, info_button=False, import_button=True, *args, **kwargs):
         Gtk.Box.__init__(self, *args, **kwargs)
 
         self.combo = Gtk.ComboBox()
@@ -196,7 +196,8 @@ class StoreComboBox(Gtk.Box):
         self.import_button = Gtk.Button('...')
 
         self.import_button.connect('clicked', self.on_import_button_clicked)
-        self.show_import_button()
+        if import_button:
+            self.show_import_button()
 
         if info_button:
             self.settings_button = Gtk.Button()
@@ -418,6 +419,22 @@ class SettingsGrid(Gtk.Grid):
                     if 'increments' in mode_kwargs.keys():
                         scale.set_increments(*mode_kwargs['increments'])
 
+            elif mode == 'combo':
+                store = gtk_utils.BaseStore(typ=str)
+                combo = StoreComboBox(store, import_button=False)
+                self.sources[combo] = var, typ
+                combo.connect('changed', self.on_combo_changed)
+                self.attach(combo, 1, i, width, height)
+                if mode_kwargs is not None:
+                    if 'store' in mode_kwargs:
+                        for item in mode_kwargs['store']:
+                            try:
+                                item, name = item
+                            except:
+                                item, name = item, str(item)
+
+                            store.add_to_store(item, name)
+
     def on_entry_changed(self, source):
         var, typ = self.sources[source]
         new = gtk_utils.read_entry(source, typ)
@@ -433,6 +450,13 @@ class SettingsGrid(Gtk.Grid):
         new = typ(source.get_value())
 
         setattr(self.obj, var, new)
+
+    def on_combo_changed(self, source, data=None):
+        var, typ = self.sources[source]
+        new = source.get_active_value()
+
+        setattr(self.obj, var, new)
+
 
 
 class SettingsDialog(Gtk.Box):
