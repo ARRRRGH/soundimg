@@ -1,7 +1,7 @@
 import data_structures.data_utils as data_utils
 import ui.base_widgets as base_widgets
 import run_time.config as config
-
+import run_time.py_utils as py_utils
 
 import numpy as np
 
@@ -100,14 +100,14 @@ class NegativeMixingMode(BrushMode):
         brush_img = brush_img.astype('float')
 
         shape = (weights.shape[0], weights.shape[1], img.shape[2])
-        masked_img = np.reshape(img[mask].astype('float'), shape)
+        bg = np.reshape(img[mask].astype('float'), shape)
 
-        s = np.sum(masked_img, axis=2) / 3
+        s = np.sum(bg, axis=2) / 3
         thr_mask = np.logical_and(s <= self.upper_thr, s >= self.lower_thr)
         not_thr_mask = np.logical_not(thr_mask)
 
         br = np.einsum('ijk, ij -> ijk', brush_img, weights / (1 - weights))
-        bg = np.einsum('ijk, ij -> ijk', masked_img, 1 / (1 - weights))
+        bg = np.einsum('ijk, ij -> ijk', bg, 1 / (1 - weights))
 
         bg[thr_mask] -= br[thr_mask]
         bg[not_thr_mask] = bg[not_thr_mask]
@@ -145,16 +145,16 @@ class AdditiveMixingMode(BrushMode):
         brush_img = brush_img.astype('float')
 
         shape = (weights.shape[0], weights.shape[1], img.shape[2])
-        masked_img = np.reshape(img[mask].astype('float'), shape)
+        bg = np.reshape(img[mask].astype('float'), shape)
 
-        s = np.sum(masked_img, axis=2) / 3
+        s = np.sum(bg, axis=2) / 3
         thr_mask = np.logical_and(s <= self.upper_thr, s >= self.lower_thr)
         not_thr_mask = np.logical_not(thr_mask)
-        bg = np.einsum('ijk, ij -> ijk', masked_img, (1 - weights))
+        bg = np.einsum('ijk, ij -> ijk', bg, (1 - weights))
         br = np.einsum('ijk, ij -> ijk', brush_img, weights)
 
         bg[thr_mask] += br[thr_mask]
-        bg[not_thr_mask] = masked_img[not_thr_mask]
+        bg[not_thr_mask] = bg[not_thr_mask]
 
         img[mask] = np.ravel(bg).astype('uint8')
 

@@ -9,8 +9,10 @@ import numpy as np
 from numba import jit
 import collections
 import threading
+import scipy.ndimage.filters as scp_filters
 
 import gi
+
 gi.require_version('Gtk', '3.0')
 
 import PIL
@@ -42,7 +44,7 @@ def uri_to_path(uri):
 def hex_to_rgb(hex_string):
     hex_string = hex_string.lstrip('#')
     lv = len(hex_string)
-    return np.array([int(hex_string[i:i + lv // 3], 16) // 16**2 for i in range(0, lv, lv // 3)])
+    return np.array([int(hex_string[i:i + lv // 3], 16) // 16 ** 2 for i in range(0, lv, lv // 3)])
 
 
 def get_next_value_in_arr(arr, value, dir, current_index, axis=0, wrap=False):
@@ -107,6 +109,7 @@ class ObjectWrapper(object):
     and then proxies the unhandled getattribute methods to it.
     Other classes are to inherit from it.
     """
+
     def __init__(self, obj):
         '''
         Wrapper constructor.
