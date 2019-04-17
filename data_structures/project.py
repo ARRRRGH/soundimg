@@ -330,6 +330,8 @@ class StartMenu(Gtk.Dialog):
         self.stack.add_titled(self.new_project_widget, 'new_project', 'New Project')
 
         self.stack.set_visible_child(self.recent_project_chooser)
+
+        self.set_position(Gtk.WindowPosition.CENTER)
         self.show_all()
 
 

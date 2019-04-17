@@ -85,6 +85,8 @@ class App(Gtk.Application):
 
         self.window = None
         self.start_menu = project.StartMenu('Choose Project', None)
+        self.start_menu.set_keep_above(True)
+
 
         self.add_main_option("test", ord("t"), GLib.OptionFlags.NONE,
                              GLib.OptionArg.NONE, "Command line test", None)
