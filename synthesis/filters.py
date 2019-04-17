@@ -11,7 +11,7 @@ import numpy as np
 from numba import jit
 
 
-@jit(cache=True, nopython=True)
+@jit(cache=False, nopython=True)
 def fade_in_sigma(start, stop, init_value, end_value, samples, precision=1e-4):
     length = stop - start
     if length == 0:
@@ -21,7 +21,7 @@ def fade_in_sigma(start, stop, init_value, end_value, samples, precision=1e-4):
     return samples
 
 
-@jit(cache=True, nopython=True)
+@jit(cache=False, nopython=True)
 def fade_out_sigma(start, stop, init_value, end_value, samples,  precision=1e-4):
     length = stop - start
     if length == 0:
@@ -31,7 +31,7 @@ def fade_out_sigma(start, stop, init_value, end_value, samples,  precision=1e-4)
     return samples
 
 
-@jit(cache=True, nopython=True)
+@jit(cache=False, nopython=True)
 def fade_in(start, stop, init_value, end_value, samples, precision=1e-4):
     """
     Linear fade in on array samples from indices start to stop and between values init_value and end_value. Returns
@@ -54,14 +54,14 @@ def fade_in(start, stop, init_value, end_value, samples, precision=1e-4):
     return samples
 
 
-@jit(cache=True, nopython=True)
+@jit(cache=False, nopython=True)
 def fade_out(start, stop, init_value, end_value, samples, precision=1e-4):
     return fade_in(start, stop, init_value, end_value, samples, precision)
     # samples[start:stop] = end_value - fade_out_arr * (end_value - init_value)
     return samples
 
 
-@jit(cache=True, nopython=True)
+@jit(cache=False, nopython=True)
 def blend(arr1, arr2):
     """
     Blend two arrays such that the resulting array transforms from arr1 to arr2. Uses a sigma decay

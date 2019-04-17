@@ -75,7 +75,7 @@ def shift_cols_right(arr, step, val):
     return ret
 
 
-@jit(cache=True, nopython=True, parallel=True)
+@jit(cache=False, nopython=True, parallel=True)
 def sigma(length, bound_cond):
     """
     Construct a sigma curve between two values in bound_cond = (lb, ub).

@@ -179,7 +179,7 @@ class Synthesizer(object):
 
         return freq_spectr
 
-    # @jit(cache=True, parallel=True, fastmath=True)
+    # @jit(cache=False, parallel=True, fastmath=True)
     def _generate_sound_wave(self, freqs, freq_spectr_samples, mask, init_conditions):
         """
         Auxiliary function including the preparation of the frequency spectrum (rise, drop, transition) and its
@@ -243,7 +243,7 @@ def _apply_limiter(freq_spectrs, limiter):
     return freq_spectrs
 
 
-@jit(cache=True, fastmath=True, nopython=True)
+@jit(cache=False, fastmath=True, nopython=True)
 def _amp_modulation(wav, osc_params, outer_phases):
     """
     Modulates the amplitude of an ensemble of n partial sound waves with m samples packed in an array with shape (m, n)
@@ -262,12 +262,12 @@ def _amp_modulation(wav, osc_params, outer_phases):
     return ret
 
 
-@jit(cache=True, nopython=True, fastmath=True, parallel=True)
+@jit(cache=False, nopython=True, fastmath=True, parallel=True)
 def _amp_modulation_per_timbre(wav, osc_params, outer_phases):
     return wav * (osc_params[1] * (np.sin(osc_params[7] + outer_phases * osc_params[3]) + 1.) + osc_params[2])
 
 
-@jit(cache=True, nopython=True, fastmath=True, parallel=True)
+@jit(cache=False, nopython=True, fastmath=True, parallel=True)
 def _freq_modulation(freqs, osc_params, outer_phases):
     """
     Modulates the frequency of an ensemble of n partial sound waves according to osc_params. Returns n np.arrays
@@ -287,7 +287,7 @@ def _freq_modulation(freqs, osc_params, outer_phases):
     return ret
 
 
-@jit(cache=True, fastmath=True, parallel=True, nopython=True, nogil=True)
+@jit(cache=False, fastmath=True, parallel=True, nopython=True, nogil=True)
 def _prepare_phases(freq_spectr, mask, init_conditions, freqs, osc_params, params):
     samples_per_px, output_sample_rate, fundamental_freq, wav_length = params
     init_outer_phases, init_inner_phases, last_freq_spectr = init_conditions
@@ -328,7 +328,7 @@ def _prepare_phases(freq_spectr, mask, init_conditions, freqs, osc_params, param
     return outer_phases, inner_phases
 
 
-# @jit(cache=True, fastmath=True, parallel=True, nopython=True)
+# @jit(cache=False, fastmath=True, parallel=True, nopython=True)
 def _prepare_freq_spectr(freq_spectr, mask, init_conditions, fade_arrs, params):
     """
     Prepares the frequency spectrum by setting sub-pixel information in freq_spectr.
@@ -400,7 +400,7 @@ def _prepare_freq_spectr(freq_spectr, mask, init_conditions, fade_arrs, params):
     return freq_spectr
 
 
-@jit(cache=True, fastmath=True, nopython=True)
+@jit(cache=False, fastmath=True, nopython=True)
 def _find_patterns(freqSpectr, last_freq_spectr):
     """
     Creates a mask containing information of rises, drops and transitions in freqSpectr. The mask is an array with
@@ -430,7 +430,7 @@ def _find_patterns(freqSpectr, last_freq_spectr):
     return mask[:, :-1]  # because of initially included initial condition
 
 
-@jit(cache=True, fastmath=True, nopython=True)
+@jit(cache=False, fastmath=True, nopython=True)
 def _get_inner_phases(fs, outer_phases, osc_params, fundamental_freq):
     f = _freq_modulation(fs, osc_params, outer_phases)
     steps = np.floor(f / fundamental_freq)
