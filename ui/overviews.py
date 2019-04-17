@@ -255,10 +255,11 @@ class TrackOverview(base_widgets.Notebook):
 
         scrolled.add(child)
 
-        child.props.valign = Gtk.Align.START
-        child.props.halign = Gtk.Align.START
+        child.set_valign(Gtk.Align.START)
+        child.set_halign(Gtk.Align.START)
 
         self.append_page(scrolled, track, Gtk.Label(track.name))
+        config.signal_manager.add_signal('reset_track', child)
         self.show_all()
 
     def set_max_content_height(self, max_height):
@@ -266,6 +267,7 @@ class TrackOverview(base_widgets.Notebook):
         self.foreach(Gtk.ScrolledWindow.set_max_content_height, self.max_height)
 
     def set_child_class(self, cla):
+        assert issubclass(cla, editors.TrackEditor)
         self.child_class = cla
 
     def update(self):
@@ -278,7 +280,7 @@ class TrackOverview(base_widgets.Notebook):
         self.show_all()
 
 
-class InstrumentOverview(TrackOverview):
+class InstrumentOverview(TrackOverview, gtk_utils._IdleObject):
     def __init__(self, tracks, *args, **kwargs):
         TrackOverview.__init__(self, *args, **kwargs)
         self.set_child_class(editors.InstrumentEditor)
@@ -286,7 +288,7 @@ class InstrumentOverview(TrackOverview):
             self.add_track(track, *args, **kwargs)
 
 
-class BufferOverview(TrackOverview):
+class BufferOverview(TrackOverview, gtk_utils._IdleObject):
     def __init__(self, tracks, buffers, sound_gen_thread, *args, **kwargs):
         TrackOverview.__init__(self, *args, **kwargs)
         self.set_child_class(editors.BufferEditor)
@@ -294,7 +296,7 @@ class BufferOverview(TrackOverview):
             self.add_track(track, buff, sound_gen_thread, *args, **kwargs)
 
 
-class FrequencyMapOverview(TrackOverview):
+class FrequencyMapOverview(TrackOverview, gtk_utils._IdleObject):
     def __init__(self, tracks, *args, **kwargs):
         TrackOverview.__init__(self, *args, **kwargs)
         self.set_child_class(editors.FrequencyMapArrayEditor)

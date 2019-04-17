@@ -16,8 +16,30 @@ from gi.repository import Gtk, GObject
 import os
 import numpy as np
 import copy
-import PIL
-from PIL import ImageFilter
+from abc import abstractmethod
+
+
+class TrackEditor(Gtk.VBox):
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+
+        toolbar = Gtk.Toolbar()
+        self.add(toolbar)
+
+        apply_button = imaging.NavigationToolButton('Apply', 'Apply Settings', 'reload', self.update)
+        save_button = imaging.NavigationToolButton('Save', 'Save Instrument', 'save', self.save)
+
+        toolbar.insert(apply_button, -1)
+        toolbar.insert(save_button, -1)
+
+
+    @abstractmethod
+    def update(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def save(self):
+        raise NotImplementedError
 
 
 class GraphEditor(Gtk.VBox):
@@ -756,9 +778,11 @@ class BrushWindow(Gtk.Box):
         self.update_current_brush()
 
 
-class BufferEditor(Gtk.VBox):
+class BufferEditor(TrackEditor):
+    __gsignals__ = {"reset_track": (GObject.SignalFlags.RUN_LAST, None, [GObject.TYPE_PYOBJECT])}
+
     def __init__(self, track, buff, sound_gen_thread, *args, **kwargs):
-        Gtk.VBox.__init__(self)
+        TrackEditor.__init__(self)
 
         buffer_editor_file = os.path.join(config.glade_dir, "buffer_editor.glade")
         builder = Gtk.Builder()
@@ -782,12 +806,15 @@ class BufferEditor(Gtk.VBox):
         self.props.valign = Gtk.Align.FILL
 
     def update(self):
-        pass
+        self.emit('reset_track', self.track)
 
 
-class InstrumentEditor(Gtk.VBox):
+class InstrumentEditor(TrackEditor):
+    __gsignals__ = {"reset_track": (GObject.SignalFlags.RUN_LAST, None, [GObject.TYPE_PYOBJECT])}
+
     def __init__(self, track, wt=None, min_dims=None):
-        Gtk.VBox.__init__(self)
+        TrackEditor.__init__(self)
+
         self.track = track
         self.instrument = track.instrument
 
@@ -795,16 +822,6 @@ class InstrumentEditor(Gtk.VBox):
             self.wave_table = track.instrument.wave_table
         else:
             self.wave_table = wt
-
-        # Orchestra settings
-        toolbar = Gtk.Toolbar()
-        self.add(toolbar)
-
-        apply_button = imaging.NavigationToolButton('Apply', 'Apply Settings', 'reload', self.update)
-        save_button = imaging.NavigationToolButton('Save', 'Save Instrument', 'save', self.save)
-
-        toolbar.insert(apply_button, -1)
-        toolbar.insert(save_button, -1)
 
         coll_window = base_widgets.CollapsingSectionWindow(min_dims=min_dims)
         self.add(coll_window)
@@ -827,6 +844,7 @@ class InstrumentEditor(Gtk.VBox):
         coll_window.add_child(self.transition_editor, border=config.section_border, hborder=config.section_hborder,
                               rubberband=config.section_rubberband, title_label=Gtk.Label('Fade In / Fade Out'))
 
+        self.show()
         self.update()
 
     ######### UI signals ###############################################################################################
@@ -835,6 +853,7 @@ class InstrumentEditor(Gtk.VBox):
         self.wave_editor.update()
         self.modulation_table.update()
         self.transition_editor.update()
+        self.emit('reset_track', self.track)
 
     def save(self, source=None):
         menu = base_widgets.StoreDialog(config.instrument_store, item=self.instrument,
@@ -878,6 +897,7 @@ class WaveTableEditor(Gtk.VBox):
 
     def add_constituent(self, source=None, constituent=None, weight=0, freq=1, shfit=0):
         if constituent is None:
+            print(self.wave_table_store.get_active_value())
             constituent = copy.copy(self.wave_table_store.get_active_value())
         self.instrument.add_constituent(constituent, weight, freq, shfit)
         self.add_new_page(constituent)
@@ -1215,11 +1235,12 @@ class _FrequencyMapEditor(GraphEditor):
         return container
 
 
-class FrequencyMapArrayEditor(Gtk.Box):
-    def __init__(self, track, min_dims=None):
-        Gtk.Box.__init__(self)
-        scrolled = base_widgets.CollapsingSectionWindow(min_dims=min_dims)
+class FrequencyMapArrayEditor(TrackEditor):
+    __gsignals__ = {"reset_track": (GObject.SignalFlags.RUN_LAST, None, [GObject.TYPE_PYOBJECT])}
 
+    def __init__(self, track, min_dims=None):
+        TrackEditor.__init__(self)
+        scrolled = base_widgets.CollapsingSectionWindow(min_dims=min_dims)
         self.add(scrolled)
 
         self.nr_subeditors = 0
@@ -1250,125 +1271,8 @@ class FrequencyMapArrayEditor(Gtk.Box):
 
             scrolled.show_all()
 
-# class StoreDialog(Gtk.VBox):
-#     def __init__(self, store, current_item_or_name):
-#         Gtk.VBox.__init__(self)
-#
-#         self.window = None
-#
-#         self.store = store
-#
-#         self.content_area = Gtk.VBox()
-#         self.pack_start(self.content_area, False, False, 5)
-#
-#         # set tree view to current_item_or_name
-#         self.preview_area = Gtk.Box()
-#         self.content_area.pack_start(self.preview_area, True, True, 0)
-#
-#         self.preview = self.store.dict.get_inv_key(current_item_or_name).get_preview(dims=config.dims_save_menu_preview)
-#         self.preview_area.pack_start(self.preview, True, True, 0)
-#
-#         self.entry = Gtk.Entry()
-#         self.entry.connect('changed', self.on_entry_changed)
-#         self.content_area.pack_start(self.entry, False, False, 5)
-#
-#         self.tree_view = StoreTreeView(store, is_editable=True, on_edit=self.on_edit)
-#         self.tree_view.get_selection().connect('changed', self.on_selection_changed)
-#         self.content_area.pack_start(self.tree_view, False, False, 5)
-#
-#         self.store_toolbar = Gtk.HBox()
-#         self.content_area.pack_start(self.store_toolbar, False, False, 5)
-#
-#         self.save_button = Gtk.Button.new_with_label('Save')
-#         self.save_button.connect('clicked', self.on_save_button_clicked)
-#
-#         self.cancel_button = Gtk.Button.new_with_label('Cancel')
-#         self.cancel_button.connect('clicked', self.on_cancel_button_clicked)
-#
-#         self.remove_button = Gtk.Button.new_with_label('Remove')
-#         self.remove_button.connect('clicked', self.on_remove_button_clicked)
-#
-#         self.store_toolbar.pack_start(self.save_button, False, False, 2)
-#         self.store_toolbar.pack_start(self.remove_button, False, False, 2)
-#         self.store_toolbar.pack_start(self.cancel_button, False, False, 2)
-#
-#     def run(self, on_destroy_callable=None):
-#         self.window = Gtk.Window()
-#         self.window.props.resizable = False
-#
-#         vbox = Gtk.VBox()
-#         content_area = Gtk.HBox()
-#         self.window.add(vbox)
-#         vbox.pack_start(content_area, False, False, 5)
-#
-#         content_area.pack_start(self, False, False, 5)
-#
-#         self.info_bar = Gtk.InfoBar()
-#         vbox.pack_start(self.info_bar, False, False, 0)
-#
-#         self.message_label = Gtk.Label.new('')
-#         self.info_bar.get_content_area().pack_start(self.message_label, False, False, 0)
-#
-#         self.store.connect('info', self.set_label_store_info)
-#         self.store.connect('error', self.set_label_store_error)
-#
-#         if on_destroy_callable is not None:
-#             self.window.connect('delete-event', on_destroy_callable)
-#
-#         self.tree_view.get_selection().select_iter(self.store.iter_name['<editor>'])
-#         return self.window
-#
-#     def on_remove_button_clicked(self, source):
-#         active_rows = self.tree_view.get_active_rows()
-#
-#         if active_rows is not None:
-#             for active_row in active_rows:
-#                 active_name = active_row[0]
-#                 self.store.remove(active_name)
-#
-#         self.show_all()
-#
-#     def on_save_button_clicked(self, source):
-#         name = self.entry.get_text()
-#         active_name = self.tree_view.get_active_rows()[0][0]
-#         active_item = self.store.dict.get_inv_key(active_name)
-#         print active_item
-#         self.store.save(item=active_item, name=name)
-#
-#     def on_cancel_button_clicked(self, source):
-#         self.window.destroy()
-#
-#     def on_entry_changed(self, source):
-#         # self.tree_view.get_selection().unselect_all()
-#         pass
-#
-#     def on_selection_changed(self, source):
-#         # set_text emits 'changed' signal, which deselects the selection due to on_entry_changed
-#         # fix this by looking up current selection and reactivating it once set_text is called
-#         active_rows = self.tree_view.get_active_rows()
-#         if active_rows is not None:
-#             active_name = active_rows[0][0]
-#             active_treeiter = self.tree_view.get_active_treeiter()
-#
-#             self.entry.set_text(active_name)
-#
-#             self.preview_area.remove(self.preview)
-#             self.preview = self.store[active_name].get_preview(dims=config.dims_save_menu_preview)
-#             self.preview_area.pack_start(self.preview, True, True, 0)
-#             self.preview_area.show_all()
-#
-#             self.tree_view.get_selection().select_iter(active_treeiter)
-#
-#     def on_edit(self, old_name, new_name):
-#         self.store.replace(old_name, new_name)
-#
-#     def set_label_store_info(self, source, message):
-#         self.message_label.set_text(message)
-#         self.info_bar.set_message_type(Gtk.MessageType.INFO)
-#
-#     def set_label_store_error(self, source, message):
-#         self.message_label.set_text(message)
-#         self.info_bar.set_message_type(Gtk.MessageType.ERROR)
+    def update(self):
+        self.emit('reset_track', self.track)
 
 
 class BufferView(imaging.UpdatedGraphPlot):

@@ -49,7 +49,6 @@ class TrackGenerator(object):
 
     def gen_sound(self, px_range):
         data, sample_range = self.playable_image.gen_sound(self.synthesizer, px_range)
-
         self.buffer[sample_range] = data
         return sample_range
 
