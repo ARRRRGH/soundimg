@@ -8,7 +8,7 @@ import run_time.config as config
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk, GdkPixbuf
 
 import os
 
@@ -301,9 +301,17 @@ class StartMenu(Gtk.Dialog):
         self.connect('response', self.on_response)
 
         content_area = self.get_content_area()
+        context = content_area.get_style_context()
+        context.add_class('box')
 
-        logo = Gtk.Image.new_from_file('./gui/image/logo/logo_big.png')
+
+        logo_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale('./gui/images/logo/logo_big.png',
+                                                              height=config.start_menu_image_height,
+                                                              width=-1,
+                                                              preserve_aspect_ratio=True)
+        logo = Gtk.Image.new_from_pixbuf(logo_pixbuf)
         content_area.pack_start(logo, False, False, 0)
+        content_area.override_background_color(0, Gdk.RGBA(1, 1, 1, 1))
 
 
         self.stack = Gtk.Stack()

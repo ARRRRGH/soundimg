@@ -115,6 +115,10 @@ class _TrackPane(Gtk.Fixed):
 
         self.track = track
 
+        context = self.get_style_context()
+        context.add_class('collapse-section')
+        self.show()
+
     def refresh(self):
         self.canvas.refresh()
         self.time_pointer.refresh()
@@ -184,8 +188,8 @@ class _TrackInfoBar(Gtk.Box, gtk_utils._IdleObject):
         track_instrument_name_field = builder.get_object('track_instrument_name_field')
 
         track_info_bar_box.remove(track_info_bar)
-        self.add(track_info_bar)
-        self.set_size_request(width, config.track_pane_info_bar_width)
+        self.pack_end(track_info_bar, True, True, config.section_hborder)
+        self.set_size_request(height=config.section_header_height, width=config.track_pane_width)
 
         # track_name_entry = UpdatedEntry(track, ['name'])
         # track_name_entry.connect('changed', self.on_track_name_entry_changed)
@@ -198,15 +202,19 @@ class _TrackInfoBar(Gtk.Box, gtk_utils._IdleObject):
         # track_name_field.add(track_name_entry)
         # track_instrument_name_field.add(track_instrument_name_label)
 
+        context = self.get_style_context()
+        context.add_class('collapse-header')
+        self.show()
+
     ######### UI signals ###############################################################################################
 
-    def on_track_reset_button_button_press_event(self, widget, event):
+    def on_track_reset_button_press_event(self, widget, event):
         self.emit('reset_track', self.track)
 
-    def on_track_size_button_button_press_event(self, widget, event):
+    def on_track_size_button_press_event(self, widget, event):
         self.emit('resize_track', self.track)
 
-    def on_track_close_button_button_press_event(self, widget, event):
+    def on_track_close_button_press_event(self, widget, event):
         self.emit('open_or_close_track', self.track)
 
     def on_track_name_entry_changed(self, entry):
@@ -214,7 +222,7 @@ class _TrackInfoBar(Gtk.Box, gtk_utils._IdleObject):
         if new_name != '':
             self.track.name = new_name
 
-    def on_track_remove_button_button_press_event(self, widget, event):
+    def on_track_remove_button_press_event(self, widget, event):
         self.emit('remove_track', self.track)
 
 

@@ -48,7 +48,6 @@ track_height = 100
 
 # appearance track pane
 track_pane_info_bar_width = 15
-track_pane_border_color = [50, 30, 100]
 track_pane_height_shrinked = 150
 track_pane_height_opened = 300
 track_pane_width = 700
@@ -56,11 +55,13 @@ track_pane_border = 3
 
 
 # main window appearance
-dims_main_player_canvas = (700, 705)
+dims_main_player_canvas = (700, 700)
 dims_amp_view = (700, 150)
+
 dims_brush_preview = (100, 100)
 dims_brush_preview_canvas = (400, 400)
-dims_brush_window = (400, 300)
+dims_brush_window = (700, 400)
+
 dims_wave_table_preview = (200, 680)
 dims_track_limiter_editor = (200, 680)
 dims_fader_editor = (200, 340)
@@ -68,14 +69,15 @@ dims_freq_map_editor = (200, 700)
 dims_save_menu_preview = (500, 500)
 dims_preview_image = (200, 200)
 dims_init_track = (track_pane_height_opened + track_pane_info_bar_width + track_pane_border, track_pane_width)
+start_menu_image_height = 300
 
-section_border = 10
-section_hborder = 0
+section_border = 3
+section_hborder = 4
 default_hborder = 5
 default_rowspacing = 3 * default_hborder
 default_colspacing = 5 * default_hborder
 section_rubberband = 0
-section_header_height = 15
+section_header_height = 30
 
 
 brush_preview_color = 'red'

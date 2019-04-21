@@ -10,37 +10,32 @@ from gi.repository import Gtk, GObject
 import os
 import pickle as pkl
 
-from abc import ABCMeta, abstractmethod
-
-
-CSS = """
-.myHeaderButton tab {
-    background-color: red;
-}
-.myHeaderButton tab:active {
-    background-color: blue;
-}
-
-"""
-
 
 class CollapseHeader(Gtk.EventBox):
-
     __gsignals__ = {"toggled": (GObject.SignalFlags.RUN_LAST, None, [GObject.TYPE_PYOBJECT])}
 
     def __init__(self, title_label=None):
         Gtk.EventBox.__init__(self)
 
-        bar = Gtk.InfoBar()
+        bar = Gtk.Box()
+
+        # fixed = Gtk.Fixed()
+        bar.set_size_request(height=config.section_header_height, width=-1)
+        # fixed.add(bar)
+
         self.add(bar)
 
-        bar.props.height_request = config.section_header_height
-
         if title_label is not None:
-            bar.get_content_area().add(title_label)
+            title_label.set_valign(Gtk.Align.CENTER)
+            bar.pack_start(title_label, False, False, config.section_hborder)
 
         self._active = False
         self.connect('button-press-event', self.clicked)
+
+        context = self.get_style_context()
+        context.add_class('collapse-header')
+
+        self.show_all()
 
     def get_active(self):
         return self._active
@@ -54,33 +49,31 @@ class CollapseHeader(Gtk.EventBox):
 
 
 class CollapseSection(Gtk.VBox):
-    def __init__(self, label, section, border_color='grey', hborder=0, rubberband=1, *args, **kwargs):
+    def __init__(self, label, section):
         Gtk.VBox.__init__(self)
         self.header = CollapseHeader(label)
         self.section = section
 
         self.add(self.header)
-
-        hbox = Gtk.HBox()
-        # hbox.pack_start(self.section, True, True, config.section_border)
-        self._section_wrapper = gtk_utils.add_with_border(self, self.section, rubberband, border_color)
-        self._section_wrapper.set_border_width(hborder)
-
-        self.add(hbox)
-        hbox.props.halign = Gtk.Align.CENTER
+        self.pack_start(self.section, True, True, config.section_hborder)
 
         self.header.connect('toggled', self.toggle)
         self.open()
 
+        context = self.get_style_context()
+        context.add_class('collapse-section')
+
+        self.show()
+
     def collapse(self):
         if self.header.get_active():
             self.set_active(False)
-        self._section_wrapper.hide()
+        self.section.hide()
 
     def open(self):
         if not self.header.get_active():
             self.header.set_active(True)
-        self._section_wrapper.show()
+        self.section.show()
 
     def toggle(self, *args, **kwargs):
         if self.header.get_active():
@@ -98,9 +91,12 @@ class CollapsingSectionWindow(Gtk.VBox):
 
         self.children = []
 
+        context = self.get_style_context()
+        context.add_class('notebook')
+
     def add_child(self, child, border, with_header=True, title_label=None, *args, **kwargs):
         if with_header:
-            child = CollapseSection(title_label, child, *args, **kwargs)
+            child = CollapseSection(title_label, child)
         self.children.append(child)
         self.scrolled_window.add_child(child, border, *args, **kwargs)
 

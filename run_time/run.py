@@ -11,7 +11,7 @@ import ui.widgets as widgets
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GLib, Gio, GObject
+from gi.repository import Gtk, GLib, Gio, GObject, Gdk
 
 import sys
 import shutil
@@ -148,14 +148,15 @@ class App(Gtk.Application):
 
     def load_css(self):
         # load customized css theme
-        # cssprovider = Gtk.CssProvider()
-        # cssprovider.load_from_path("./theme/Communitheme-Gray/Communitheme-Gray/gtk-3.0/gtk.css")
-        # screen = Gdk.Screen.get_default()
-        # stylecontext = Gtk.StyleContext()
-        # stylecontext.add_provider_for_screen(screen, cssprovider,
-        #                                      Gtk.STYLE_PROVIDER_PRIORITY_USER)
+        cssprovider = Gtk.CssProvider()
+        cssprovider.load_from_path("./gui/theme/Blueberry-Breeze-gtk/gtk-3.0/gtk.css")
 
-        pass
+        screen = Gdk.Screen.get_default()
+
+        stylecontext = Gtk.StyleContext()
+        stylecontext.add_provider_for_screen(screen, cssprovider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
+
 
     def on_about(self, action, param):
         about_dialog = Gtk.AboutDialog(transient_for=self.window, modal=True)

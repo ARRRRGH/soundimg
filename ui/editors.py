@@ -11,7 +11,7 @@ from run_time import config as config
 from ui import imaging as imaging
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, Gdk
 
 import os
 import numpy as np
@@ -318,12 +318,12 @@ class LimiterEditor(GraphEditor):
         return collection, line1, line2
 
 
-class _ApplyBrushMenu(Gtk.VBox):
+class _ApplyBrushMenu(Gtk.Box):
 
     __gsignals__ = {'changed': (GObject.SignalFlags.RUN_LAST, None, [])}
 
     def __init__(self, canvas):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
         self.canvas = canvas
 
@@ -336,6 +336,7 @@ class _ApplyBrushMenu(Gtk.VBox):
 
         self.size_scale.set_range(1, config.params.image_width)
         self.size_scale.set_increments(1, 1)
+        self.size_scale.set_value_pos(Gtk.PositionType.RIGHT)
 
         # define the repeater
         self.repeater_menu = _RepeaterMenu()
@@ -349,7 +350,7 @@ class _ApplyBrushMenu(Gtk.VBox):
         main_box = Gtk.Grid()
         main_box.set_row_spacing(config.default_rowspacing)
         main_box.set_column_spacing(config.default_colspacing)
-        self.pack_start(main_box, True, True, 0)
+        self.add(main_box)
 
         # br_box = Gtk.HBox()
         main_box.attach(Gtk.Label('Apply Brush'), 0, 0, 1, 1)
@@ -364,6 +365,8 @@ class _ApplyBrushMenu(Gtk.VBox):
 
         main_box.attach(Gtk.Label('Color'), 0, 3, 1, 1)
         main_box.attach(self.colmode_menu, 1, 3, 3, 2)
+
+        self.show_all()
 
     def on_size_scale_value_changed(self, sender=None, data=None, data2=None):
         self.update_brush_from_size_scale(self.active_brush, self.size_scale)
@@ -411,7 +414,6 @@ class _ColorAndModeMenu(Gtk.HBox):
         Gtk.HBox.__init__(self)
 
         self.content_area = Gtk.VBox()
-        self.content_area.set_spacing(config.default_hborder)
 
         self.pack_start(self.content_area, True, True, 0)
         self.rgb = None
@@ -429,6 +431,7 @@ class _ColorAndModeMenu(Gtk.HBox):
         self.weight_scale.connect('value-changed', self.on_weight_scale_value_changed)
         self.weight_scale.set_range(0, 1)
         self.weight_scale.set_increments(0.001, 0.001)
+        self.weight_scale.set_value_pos(Gtk.PositionType.RIGHT)
 
         self.cm_content_area = Gtk.HBox()
         self.content_area.pack_start(self.cm_content_area, True, True, 0)
@@ -717,7 +720,7 @@ class BrushWindow(Gtk.Box):
     def __init__(self, dims_canvas=None, dims_imag=None):
         Gtk.Box.__init__(self)
 
-        scrolled = base_widgets.CollapsingSectionWindow(propagate_natural_height=True, propagate_natural_width=True,
+        scrolled = base_widgets.CollapsingSectionWindow(propagate_natural_height=False, propagate_natural_width=False,
                                                         min_dims=config.dims_brush_window)
         self.pack_start(scrolled, True, True, 0)
 
@@ -725,13 +728,12 @@ class BrushWindow(Gtk.Box):
         self.brush_editor.connect('changed', self.on_brush_editor_changed)
 
         self.apply_menu = _ApplyBrushMenu(self.brush_editor.canvas)
-        self.apply_menu.set_border_width(config.default_hborder)
         self.apply_menu.connect('changed', self.on_apply_menu_changed)
 
-        scrolled.add_child(self.apply_menu, border=config.section_border, hborder=config.section_hborder,
+        scrolled.add_child(self.apply_menu, border=config.section_border,
                            rubberband=config.section_rubberband, title_label=Gtk.Label('Brush'))
 
-        scrolled.add_child(self.brush_editor, border=config.section_border, hborder=config.section_hborder,
+        scrolled.add_child(self.brush_editor, border=config.section_border,
                            rubberband=config.section_rubberband, title_label=Gtk.Label('Brush Editor'))
 
     @property
@@ -1142,7 +1144,7 @@ class _WaveTableEditorPage(Gtk.VBox):
         content_area.pack_start(self.freq_scale, True, True, 5)
 
         self.shift_scale = Gtk.HScrollbar()
-        self.shift_scale.set_range(0, 2 * np.pi * 1000)
+        self.shift_scale.set_range(0, 10 * 1000)
         self.shift_scale.set_increments(0.01, 0.01)
         self.shift_scale.set_value(self.options['shifts'][self.constituent] * 1000)
         self.shift_scale.connect('value_changed', self.on_shift_scale_value_changed)
