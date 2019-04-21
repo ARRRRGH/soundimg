@@ -5,6 +5,7 @@ import data_structures.data_utils as data_utils
 
 import numpy as np
 import copy
+import scipy.signal
 
 
 class Instrument(data_utils.StoreInterface):
@@ -20,7 +21,7 @@ class Instrument(data_utils.StoreInterface):
         self.nr_osc_params = 8
         self.osc_params = self.get_osc_params_from_timbre()
 
-        self.wave_table = wtab
+        self.wave_table = copy.deepcopy(wtab)
 
         self.fader_in = graph.Fader(10, fade_in=True)
         self.fader_out = graph.Fader(10, fade_in=False)
@@ -81,9 +82,9 @@ class Instrument(data_utils.StoreInterface):
             ones = np.ones(length, dtype=np.float64)
             vals = np.zeros(length, dtype=np.float64)
             norm = 1e-7
+            outer_phases = np.linspace(0, 2 * np.pi, length)
 
             for constituent in self.constituents:
-                outer_phases = np.linspace(0, 2 * np.pi, length) + opts['shifts'][constituent]
                 osc_params = self.get_osc_params_from_wav_table_opts(opts, constituent)
                 freqs = ones * fundamental_freq
 
@@ -94,9 +95,10 @@ class Instrument(data_utils.StoreInterface):
 
                 norm_per_constituent = opts['weights'][constituent]
                 norm += norm_per_constituent
+                wav *= scipy.signal.gausspulse(outer_phases - np.pi, fc=opts['shifts'][constituent])
                 vals += wav
 
-            # fixme: dont access private graph vars directly
+        # fixme: dont access private graph vars directly
             self.wave_table._ys = vals / norm
 
     def update_osc_params(self, modulation_options):

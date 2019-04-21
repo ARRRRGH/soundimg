@@ -8,7 +8,7 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 
 
-class BrushMode(data_utils.StoreInterface):
+class ApplyMode(data_utils.StoreInterface):
     """
     Interface for Brush Modes.
 
@@ -30,18 +30,25 @@ class BrushMode(data_utils.StoreInterface):
         return None
 
 
-class SubtractMode(BrushMode):
-    """ Subtract without reweighing canvas image."""
+class BrushMode(ApplyMode):
+    __metaclass__ = ABCMeta
 
     def __init__(self):
-        BrushMode.__init__(self)
+        ApplyMode.__init__(self)
 
         self.upper_thr = 255
         self.lower_thr = 0
+        self.include_empty = True
 
         settings = [('Upper Threshold', 'upper_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1),
-                    ('Lower Threshold', 'lower_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1)]
+                    ('Lower Threshold', 'lower_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1),
+                    ('Include Empty', 'include_empty', bool, 'switch', {}, 1, 1)]
         self.settings_dialog = base_widgets.SettingsDialog(settings, self, 'Set Threshold', config.main_window)
+
+
+
+class SubtractMode(BrushMode):
+    """ Subtract without reweighing canvas image."""
 
     def apply(self, img, brush_img, mask, weights):
         """
@@ -59,7 +66,9 @@ class SubtractMode(BrushMode):
         bg = np.reshape(img[mask].astype('float'), shape)
 
         s = np.sum(bg, axis=2) / 3
-        thr_mask = np.logical_and(s <= self.upper_thr, s >= self.lower_thr)
+        thr_mask = np.logical_and.reduce((s <= self.upper_thr,
+                                          s >= self.lower_thr,
+                                          np.sum(brush_img, axis=2) > self.include_empty))
         not_thr_mask = np.logical_not(thr_mask)
 
         br = np.einsum('ijk, ij -> ijk', brush_img, weights)
@@ -77,15 +86,6 @@ class SubtractMode(BrushMode):
 
 class NegativeMixingMode(BrushMode):
     """ Subtract from reweighed canvas image. """
-    def __init__(self):
-        BrushMode.__init__(self)
-
-        self.upper_thr = 255
-        self.lower_thr = 0
-
-        settings = [('Upper Threshold', 'upper_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1),
-                    ('Lower Threshold', 'lower_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1)]
-        self.settings_dialog = base_widgets.SettingsDialog(settings, self, 'Set Threshold', config.main_window)
 
     def apply(self, img, brush_img, mask, weights):
         """
@@ -103,7 +103,9 @@ class NegativeMixingMode(BrushMode):
         bg = np.reshape(img[mask].astype('float'), shape)
 
         s = np.sum(bg, axis=2) / 3
-        thr_mask = np.logical_and(s <= self.upper_thr, s >= self.lower_thr)
+        thr_mask = np.logical_and.reduce((s <= self.upper_thr,
+                                          s >= self.lower_thr,
+                                          np.sum(brush_img, axis=2) > self.include_empty))
         not_thr_mask = np.logical_not(thr_mask)
 
         br = np.einsum('ijk, ij -> ijk', brush_img, weights / (1 - weights))
@@ -122,16 +124,6 @@ class NegativeMixingMode(BrushMode):
 class AdditiveMixingMode(BrushMode):
     """ Add to reweighed canvas image. """
 
-    def __init__(self):
-        BrushMode.__init__(self)
-
-        self.upper_thr = 255
-        self.lower_thr = 0
-
-        settings = [('Upper Threshold', 'upper_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1),
-                    ('Lower Threshold', 'lower_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1)]
-        self.settings_dialog = base_widgets.SettingsDialog(settings, self, 'Set Threshold', config.main_window)
-
     def apply(self, img, brush_img, mask, weights):
         """
         Return sum of two arrays. Weights holds the opacity of brush_img
@@ -148,7 +140,9 @@ class AdditiveMixingMode(BrushMode):
         bg = np.reshape(img[mask].astype('float'), shape)
 
         s = np.sum(bg, axis=2) / 3
-        thr_mask = np.logical_and(s <= self.upper_thr, s >= self.lower_thr)
+        thr_mask = np.logical_and.reduce((s <= self.upper_thr,
+                                          s >= self.lower_thr,
+                                          np.sum(brush_img, axis=2) > self.include_empty))
         not_thr_mask = np.logical_not(thr_mask)
         bg = np.einsum('ijk, ij -> ijk', bg, (1 - weights))
         br = np.einsum('ijk, ij -> ijk', brush_img, weights)
@@ -167,16 +161,6 @@ class AdditiveMixingMode(BrushMode):
 class AddMode(BrushMode):
     """ Add without reweighing canvas image. """
 
-    def __init__(self):
-        BrushMode.__init__(self)
-
-        self.upper_thr = 255
-        self.lower_thr = 0
-
-        settings = [('Upper Threshold', 'upper_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1),
-                    ('Lower Threshold', 'lower_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1)]
-        self.settings_dialog = base_widgets.SettingsDialog(settings, self, 'Set Threshold', config.main_window)
-
     def apply(self, img, brush_img, mask, weights):
         """
         Return weighted difference of two arrays.
@@ -193,7 +177,10 @@ class AddMode(BrushMode):
         bg = np.reshape(img[mask].astype('float'), shape)
 
         s = np.sum(bg, axis=2) / 3
-        thr_mask = np.logical_and(s <= self.upper_thr, s >= self.lower_thr)
+
+        thr_mask = np.logical_and.reduce((s <= self.upper_thr,
+                                          s >= self.lower_thr,
+                                          np.sum(brush_img, axis=2) > self.include_empty))
         not_thr_mask = np.logical_not(thr_mask)
 
         br = np.einsum('ijk, ij -> ijk', brush_img, weights)
@@ -208,24 +195,24 @@ class AddMode(BrushMode):
         self.settings_dialog.run()
 
 
-class FilterMode(BrushMode):
+class FilterMode(ApplyMode):
     """ Apply a PIL filter to a selected patch. """
 
     def __init__(self):
-        BrushMode.__init__(self)
-
         self.filter_type = 'gaussian_blur'
         self.size = 0
         self.axis= 0
         self.upper_thr = 255
         self.lower_thr = 0
+        self.include_empty = True
 
         settings = [('Filter Type', 'filter_type', str, 'combo',
                      {'store': py_utils.ImageHandler.get_support_keys()}, 1, 1),
                     ('Size', 'size', int, 'entry', {}, 1, 1),
                     ('Axis', 'axis', int, 'entry', {'range': (0, 1)}, 1, 1),
                     ('Upper Threshold', 'upper_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1),
-                    ('Lower Threshold', 'lower_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1)]
+                    ('Lower Threshold', 'lower_thr', int, 'entry', {'range': (0, 255), 'increments': (1, 1)}, 1, 1),
+                    ('Include Empty', 'include_empty', bool, 'switch', {}, 1, 1)]
 
         self.settings_dialog = base_widgets.SettingsDialog(settings, self, 'Set Threshold', config.main_window)
 
@@ -247,7 +234,9 @@ class FilterMode(BrushMode):
                                                  self.size, self.axis).reshape(shape).astype('float64')
 
         s = np.sum(bg, axis=2) / 3
-        thr_mask = np.logical_and(s <= self.upper_thr, s >= self.lower_thr)
+        thr_mask = np.logical_and.reduce((s <= self.upper_thr,
+                                          s >= self.lower_thr,
+                                          np.sum(br, axis=2) > self.include_empty))
         not_thr_mask = np.logical_not(thr_mask)
 
         bg = np.einsum('ijk, ij -> ijk', bg, (1 - weights))

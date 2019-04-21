@@ -287,7 +287,7 @@ class AppWindow(Gtk.ApplicationWindow):
         return proj
 
     def load_brush_modes(self):
-        brush_mode_store = gtk_utils.FileStore(storage_dir=None, ext=None, typ=brush_modes.BrushMode)
+        brush_mode_store = gtk_utils.FileStore(storage_dir=None, ext=None, typ=brush_modes.ApplyMode)
         config.brush_mode_store = brush_mode_store
 
         config.brush_mode_store.add_to_store(brush_modes.AddMode(), 'Add', protected=True)
