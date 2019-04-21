@@ -321,11 +321,12 @@ class AppWindow(Gtk.ApplicationWindow):
                                                 ext='wavetable', typ=wav_tables.WaveTable)
         config.wave_tables_store = wave_tables_store
 
-        sine = wav_tables.Sine()
-        config.wave_tables_store.add_to_store(sine, sine.name, protected=True)
+        waves_table_classes = [wav_tables.Sine, wav_tables.WhiteNoise, wav_tables.SawTooth, wav_tables.Square,
+                               wav_tables.Ricker]
 
-        noise = wav_tables.WhiteNoise()
-        config.wave_tables_store.add_to_store(noise, noise.name, protected=True)
+        for cls in waves_table_classes:
+            wavt = cls()
+            config.wave_tables_store.add_to_store(wavt, wavt.name, protected=True)
 
 
     def load_freq_mappings(self, proj_dir):

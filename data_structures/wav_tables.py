@@ -1,6 +1,6 @@
 import numpy as np
 from numba import jit
-
+import scipy.signal
 import data_structures.graph as graph
 
 N = 10000
@@ -44,3 +44,34 @@ class WhiteNoise(WaveTable):
         WaveTable.__init__(self, wav, phas, name='Noise', raw_data=True, settable=False)
 
 
+class SawTooth(WaveTable):
+    def __init__(self):
+
+        self.length = N
+
+        phas = self.get_phases(N)
+        wav = scipy.signal.sawtooth(phas)
+
+        WaveTable.__init__(self, wav, phas, name='SawTooth', raw_data=True, settable=False)
+
+
+class Square(WaveTable):
+    def __init__(self):
+
+        self.length = N
+
+        phas = self.get_phases(N)
+        wav = scipy.signal.square(phas)
+
+        WaveTable.__init__(self, wav, phas, name='Square', raw_data=True, settable=False)
+
+
+class Ricker(WaveTable):
+    def __init__(self):
+
+        self.length = N
+
+        phas = self.get_phases(N)
+        wav = scipy.signal.ricker(N, N/40)
+
+        WaveTable.__init__(self, wav, phas, name='Ricker', raw_data=True, settable=False)
