@@ -431,6 +431,13 @@ class SettingsGrid(Gtk.Grid):
 
                             store.add_to_store(item, name)
 
+            elif mode == 'switch':
+                switch = Gtk.Switch()
+                self.sources[switch] = var, typ
+                switch.connect("notify::active", self.on_switch_activated)
+                switch.set_active(True)
+                self.attach(switch, 1, i, width, height)
+
     def on_entry_changed(self, source):
         var, typ = self.sources[source]
         new = gtk_utils.read_entry(source, typ)
@@ -450,6 +457,12 @@ class SettingsGrid(Gtk.Grid):
     def on_combo_changed(self, source, data=None):
         var, typ = self.sources[source]
         new = source.get_active_value()
+
+        setattr(self.obj, var, new)
+
+    def on_switch_activated(self, source, data=None):
+        var, typ = self.sources[source]
+        new = source.get_active()
 
         setattr(self.obj, var, new)
 
