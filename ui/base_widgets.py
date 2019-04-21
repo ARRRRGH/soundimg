@@ -365,14 +365,18 @@ class ResponseDialog(Gtk.Dialog):
 
         Gtk.Dialog.__init__(self, name, parent, 0, button_data)
 
-        box = self.get_content_area()
-        box.add(info_widget)
-        box.set_spacing(config.default_hborder)
+        content_area = self.get_content_area()
+        content_area.add(info_widget)
+        content_area.set_border_width(config.default_hborder)
+
+        action_area = self.get_action_area()
+        action_area.set_border_width(config.default_hborder)
 
         if hide_on_destroy:
             self.connect('destroy', lambda source: self.hide())
         self.set_modal(modal)
 
+        self.set_position(Gtk.WindowPosition.CENTER)
         self.show_all()
 
 
@@ -431,12 +435,19 @@ class SettingsGrid(Gtk.Grid):
 
                             store.add_to_store(item, name)
 
-            elif mode == 'switch':
+            elif mode == 'switch' :
                 switch = Gtk.Switch()
                 self.sources[switch] = var, typ
                 switch.connect("notify::active", self.on_switch_activated)
                 switch.set_active(True)
                 self.attach(switch, 1, i, width, height)
+
+            elif mode == 'check' :
+                check = Gtk.CheckButton()
+                self.sources[check] = var, typ
+                check.connect("toggled", self.on_switch_activated)
+                check.set_active(True)
+                self.attach(check, 1, i, width, height)
 
     def on_entry_changed(self, source):
         var, typ = self.sources[source]

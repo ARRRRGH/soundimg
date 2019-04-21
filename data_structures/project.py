@@ -301,6 +301,10 @@ class StartMenu(Gtk.Dialog):
         self.connect('response', self.on_response)
 
         content_area = self.get_content_area()
+        action_area = self.get_action_area()
+
+        action_area.set_border_width(config.default_hborder)
+
         context = content_area.get_style_context()
         context.add_class('box')
 
@@ -311,8 +315,6 @@ class StartMenu(Gtk.Dialog):
                                                               preserve_aspect_ratio=True)
         logo = Gtk.Image.new_from_pixbuf(logo_pixbuf)
         content_area.pack_start(logo, False, False, 0)
-        content_area.override_background_color(0, Gdk.RGBA(1, 1, 1, 1))
-
 
         self.stack = Gtk.Stack()
         # self.stack.set_vhomogeneous(False)
