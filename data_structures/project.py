@@ -5,6 +5,7 @@ import ui.editors as editors
 import ui.gtk_utils as gtk_utils
 import ui.base_widgets as base_widgets
 import run_time.config as config
+import run_time.py_utils as py_utils
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -309,7 +310,7 @@ class StartMenu(Gtk.Dialog):
         context.add_class('box')
 
 
-        logo_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale('./gui/images/logo/logo_big.png',
+        logo_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(py_utils.get_local_path('gui/images/logo/logo_big.png'),
                                                               height=config.start_menu_image_height,
                                                               width=-1,
                                                               preserve_aspect_ratio=True)
@@ -361,6 +362,7 @@ class StartMenu(Gtk.Dialog):
             os.mkdir(os.path.normpath(path + '/data/freq_mappings'))
             os.mkdir(os.path.normpath(path + '/data/wave_tables'))
             os.mkdir(os.path.normpath(path + '/data/modulations'))
+            os.mkdir(os.path.normpath(path + '/data/track_images'))
         except Exception as e:
             dialog = Gtk.MessageDialog(config.main_window, 0, Gtk.MessageType.INFO,
                                        Gtk.ButtonsType.CANCEL,

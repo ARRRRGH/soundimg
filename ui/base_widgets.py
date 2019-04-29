@@ -119,7 +119,8 @@ class FocusScrolledWindow(Gtk.ScrolledWindow):
     Attach event handlers which will scroll it to show the focused widget.
     """
 
-    def __init__(self, min_dims=None, max_dims=None, propagate_natural_height=False, propagate_natural_width=False):
+    def __init__(self, min_dims=None, max_dims=None, propagate_natural_height=False, propagate_natural_width=False,
+                 scrolled=True):
         Gtk.ScrolledWindow.__init__(self)
         self.content_area = Gtk.VBox()
         self.add(self.content_area)

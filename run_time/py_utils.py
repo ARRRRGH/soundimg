@@ -10,6 +10,8 @@ from numba import jit
 import collections
 import threading
 import scipy.ndimage.filters as scp_filters
+import os
+import sys
 
 import gi
 
@@ -73,6 +75,15 @@ def shift_cols_right(arr, step, val):
     ret = np.roll(arr, step)
     ret[:, :step] = np.matrix(val).T
     return ret
+
+
+def get_local_path(path):
+    try:
+        wd = sys._MEIPASS
+    except AttributeError:
+        wd = os.getcwd()
+    return os.path.join(wd, path)
+
 
 
 @jit(cache=False, nopython=True, parallel=True)

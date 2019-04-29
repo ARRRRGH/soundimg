@@ -1,6 +1,7 @@
 import run_time.config as config
 import run_time.thread as thread
 import run_time.audio_export as audio_export
+import ui.editors as editors
 import ui.gtk_utils as gtk_utils
 import ui.overviews as overviews
 import ui.base_widgets as base_widgets
@@ -240,7 +241,8 @@ class OptionsWindow(Gtk.VBox, base_widgets.EclipseChild):
         self.option_toolbar.pack_start(self.stack_switcher, False, False, 0)
 
         # Instrument Page
-        self.instrument_overview = overviews.InstrumentOverview(tracks=[], min_dims=config.dims_main_player_canvas)
+        self.instrument_overview = overviews.InstrumentOverview(tracks=[], min_dims=config.dims_main_player_canvas,
+                                                                scrolled=True)
         config.instrument_overview = self.instrument_overview
 
         # Post Synthesis Page
@@ -254,9 +256,13 @@ class OptionsWindow(Gtk.VBox, base_widgets.EclipseChild):
         self.freq_map_overview = overviews.FrequencyMapOverview([], min_dims=config.dims_main_player_canvas)
         config.freq_map_overview = self.freq_map_overview
 
+        # Color Syntax Page
+        self.color_syntax = editors.ColorSyntaxEditor()
+
         # add pages
         self.add_page(self.instrument_overview, 'Instrument')
         self.add_page(self.freq_map_overview, 'Frequency Map')
+        self.add_page(self.color_syntax, 'Color Syntax')
         self.add_page(self.buffer_overview, 'Post Synthesis')
 
     def add_page(self, page_overview, name):
@@ -269,12 +275,13 @@ class OptionsWindow(Gtk.VBox, base_widgets.EclipseChild):
 
     def add_track(self, track):
         # update overviews
-        self.instrument_overview.add_track(track, min_dims=config.dims_main_player_canvas)
+        self.instrument_overview.add_track(track, scrolled=True, min_dims=config.dims_main_player_canvas)
         self.buffer_overview.add_track(track,
-                                       config.player.sound_gen_thread.track_generators[track].buffer,
-                                       config.player.sound_gen_thread,
-                                       min_dims=config.dims_main_player_canvas)
-        self.freq_map_overview.add_track(track, min_dims=config.dims_main_player_canvas)
+                                       buff=config.player.sound_gen_thread.track_generators[track].buffer,
+                                       sound_gen_thread=config.player.sound_gen_thread,
+                                       min_dims=config.dims_main_player_canvas,
+                                       scrolled=True)
+        self.freq_map_overview.add_track(track, min_dims=config.dims_main_player_canvas, scrolled=True)
 
     def hide(self):
         super(OptionsWindow, self).hide()

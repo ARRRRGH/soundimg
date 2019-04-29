@@ -42,10 +42,6 @@ def get_time_px():
     return player.get_absolute_px_from_sample(played_samples)
 
 
-# default track settings
-track_height = 100
-
-
 # appearance track pane
 track_pane_info_bar_width = 15
 track_pane_height_shrinked = 150
@@ -55,15 +51,15 @@ track_pane_border = 3
 
 
 # main window appearance
-dims_main_player_canvas = (700, 700)
-dims_amp_view = (700, 150)
+dims_main_player_canvas = (698, 700)
+dims_amp_view = (730, 150)
 
 dims_brush_preview = (100, 100)
 dims_brush_preview_canvas = (400, 400)
-dims_brush_window = (700, 400)
+dims_brush_window = (730, 400)
 
-dims_wave_table_preview = (200, 680)
-dims_track_limiter_editor = (200, 680)
+dims_wave_table_preview = (200, 700)
+dims_track_limiter_editor = (200, 700)
 dims_fader_editor = (200, 340)
 dims_freq_map_editor = (200, 700)
 dims_save_menu_preview = (500, 500)
@@ -89,6 +85,7 @@ wave_tables_store = None
 freq_mappings_store = None
 modulation_store = None
 brush_mode_store = None
+track_image_store = None
 
 # other settings
 time_pointer_callback_time = 20

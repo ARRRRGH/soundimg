@@ -100,8 +100,20 @@ class _TrackPane(Gtk.Fixed):
         dims_canvas = (config.track_pane_height_opened, config.track_pane_width)
         self.canvas = imaging.Canvas(imag=track.image, dims_canvas=dims_canvas, *args, **kwargs)
 
+        save_button = imaging.NavigationToolButton('Save', 'Save Track Image', 'save', self.save)
+        import_button = imaging.NavigationToolButton('Import', 'Import Track Image', 'import', self.import_img)
+
+        self.canvas.toolbar.add_tool(save_button, 6)
+        self.canvas.toolbar.add_tool(import_button, 7)
+
+        self.track_image_combo = base_widgets.StoreComboBox(config.track_image_store, info_button=True)
+        item = Gtk.ToolItem()
+        item.add(self.track_image_combo)
+        item.props.margin_left = config.default_hborder
+        self.canvas.toolbar.add(item)
+
         self.track_pane = Gtk.VBox()
-        self.track_pane.pack_start(self.info_bar, False, False, 0)
+        self.track_pane.pack_start(self.info_bar, True, True, 0)
         self.track_pane.add(self.canvas)
         self.add(self.track_pane)
 
@@ -164,6 +176,19 @@ class _TrackPane(Gtk.Fixed):
         else:
             self.open()
         self.show_all()
+
+    def save(self, *args, **kwargs):
+        menu = base_widgets.StoreDialog(config.track_image_store, item=self.canvas.imag,
+                                        action=Gtk.FileChooserAction.SAVE)
+        response = menu.run()
+
+    def import_img(self, *args, **kwargs):
+        active_image = self.track_image_combo.get_active_value()
+        # fixme: check if sizes are the same and/or resize
+        self.canvas.imag.load(active_image)
+        self.canvas.is_changed = True
+        self.canvas.redraw()
+
 
 
 class _TrackInfoBar(Gtk.Box, gtk_utils._IdleObject):
@@ -237,29 +262,29 @@ class TrackOverview(base_widgets.Notebook):
         self.max_width = max_width
         self.min_width = min_width
 
-    def add_track(self, track, *args, **kwargs):
+    def add_track(self, track, scrolled=True, *args, **kwargs):
         child = self.child_class(track, *args, **kwargs)
         self.overviews_per_track[track] = child
 
         # page_title_label = UpdatedLabel(track, ['name'])
         # page_title_label.set_on_member_update(gtk_utils.set_text_buffer_on_update)
 
-        scrolled = Gtk.ScrolledWindow()
+        if scrolled:
+            scrolled = Gtk.ScrolledWindow()
+            self.min_height, self.min_width = config.dims_main_player_canvas[1], config.dims_main_player_canvas[0]
 
-        # scrolled.set_propagate_natural_height(True)
-        # scrolled.set_propagate_natural_width(True)
+            if self.max_height is not None:
+                scrolled.set_max_content_height(self.max_height)
+            if self.min_height is not None:
+                scrolled.set_min_content_height(self.min_height)
 
-        self.min_height, self.min_width = config.dims_main_player_canvas[1], config.dims_main_player_canvas[0]
+            if self.max_width is not None:
+                scrolled.set_max_content_width(self.max_width)
+            if self.min_width is not None:
+                scrolled.set_min_content_width(self.min_width)
 
-        if self.max_height is not None:
-            scrolled.set_max_content_height(self.max_height)
-        if self.min_height is not None:
-            scrolled.set_min_content_height(self.min_height)
-
-        if self.max_width is not None:
-            scrolled.set_max_content_width(self.max_width)
-        if self.min_width is not None:
-            scrolled.set_min_content_width(self.min_width)
+        else:
+            scrolled = Gtk.Box(orientation='vertical')
 
         scrolled.add(child)
 

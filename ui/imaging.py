@@ -486,7 +486,7 @@ class Updater(object):
 
 
 class UpdatedFigure(Gtk.VBox, Updater):
-    def __init__(self, dims, dpi=30):
+    def __init__(self, dims, dpi=30, toolbar_loc=0):
         """
         Any type of graphical display should derive from this class. It implements matplotlib figure that can be
         efficiently updated
@@ -501,11 +501,16 @@ class UpdatedFigure(Gtk.VBox, Updater):
 
         self.figure, self.ax, self.canvas = self.initialize_plt_objects(dims)
 
-        self.content_area = Gtk.Box()
+        self.content_area = Gtk.Box(orientation='vertical')
         self.toolbar = NavigationToolbar(self, config.main_window)
-        self.content_area.pack_start(self.toolbar, True, True, 0)
 
-        self.add(self.canvas)
+        if toolbar_loc == 0:
+            self.content_area.pack_start(self.canvas, True, True, 0)
+        elif toolbar_loc == 1:
+            self.content_area.pack_start(self.canvas, True, True, 0)
+
+        self.content_area.add(self.toolbar)
+
         self.pack_start(self.content_area, False, False, 0)
 
     def remove_toolbar(self):

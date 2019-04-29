@@ -7,7 +7,7 @@ import numpy as np
 import copy
 
 
-class Image(object):
+class Image(data_utils.StoreInterface):
     """ Image is the actual container for images.
 
     Image holds and manages the image in form of a np.array. It is aware of the changes applied to the array until
@@ -38,6 +38,11 @@ class Image(object):
     @property
     def shape(self):
         return tuple(list(self.img.shape)[0:2])
+
+    def load(self, imag):
+        self.img[:, :, :] = py_utils.ImageHandler.resize(imag.img, (self.img.shape[1], self.img.shape[0]))
+        self.update_img_data()
+        self.set_state_col(1)
 
     def set_fixed_state_pxs(self, key):
         for px, vals in self.fixed_state_px.items():

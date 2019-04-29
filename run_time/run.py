@@ -1,10 +1,12 @@
 import run_time.config as config
 import data_structures.project as project
 import run_time.thread as thread
+import run_time.py_utils as py_utils
 import data_structures.brush as brush
 import data_structures.sound as sound
 import data_structures.brush_modes as brush_modes
 import data_structures.wav_tables as wav_tables
+import data_structures.image as image
 import ui.editors as editors
 import ui.gtk_utils as gtk_utils
 import ui.widgets as widgets
@@ -149,7 +151,7 @@ class App(Gtk.Application):
     def load_css(self):
         # load customized css theme
         cssprovider = Gtk.CssProvider()
-        cssprovider.load_from_path("./gui/theme/Blueberry-Breeze-gtk/gtk-3.0/gtk.css")
+        cssprovider.load_from_path(py_utils.get_local_path("gui/theme/Blueberry-Breeze-gtk/gtk-3.0/gtk.css"))
 
         screen = Gdk.Screen.get_default()
 
@@ -216,6 +218,7 @@ class AppWindow(Gtk.ApplicationWindow):
         spinner_field = main_builder.get_object('sound_gen_spinner_field')
 
         amp_field = main_builder.get_object('main_amp_field')
+        self.amp_toolbar_field = main_builder.get_object('amp_toolbar_field')
 
         # initialize brush editor
         brush_window = self.set_brush_editor(brush_editor_box)
@@ -236,8 +239,12 @@ class AppWindow(Gtk.ApplicationWindow):
         spinner_field.add(widgets.SpinnerOnSignal(config.player.sound_gen_thread, 'not_idle', 'idle'))
 
     def set_buffer_view(self, parent, buff):
-        buffer_graph_plot = editors.BufferView(buff=buff, dims=config.dims_amp_view, orientation=1, direction_x=-1)
+        buffer_graph_plot = editors.BufferView(buff=buff, dims=config.dims_amp_view, toolbar_loc=1,
+                                               orientation=1, direction_x=-1)
         buffer_graph_plot.toolbar.hide_message(True)
+        toolbar = buffer_graph_plot.canvas.toolbar
+        buffer_graph_plot.remove_toolbar()
+        self.amp_toolbar_field.add(toolbar)
         parent.pack_start(buffer_graph_plot, False, False, 0)
 
     def set_brush_editor(self, parent):
@@ -250,7 +257,7 @@ class AppWindow(Gtk.ApplicationWindow):
         :param menu_button:
         :return:
         """
-        brush_editor = editors.BrushWindow(dims_canvas=config.dims_brush_preview_canvas)
+        brush_editor = editors.DrawingWindow(dims_canvas=config.dims_brush_preview_canvas)
         config.signal_manager.add_signal('set-new-current-brush', brush_editor)
         parent.pack_start(brush_editor, False, False, 0)
 
@@ -283,6 +290,7 @@ class AppWindow(Gtk.ApplicationWindow):
         self.load_instruments(project_dir)
         self.load_freq_mappings(project_dir)
         self.load_modulations(project_dir)
+        self.load_track_images(project_dir)
 
         return proj
 
@@ -339,6 +347,11 @@ class AppWindow(Gtk.ApplicationWindow):
         modulation_store = gtk_utils.FileStore(storage_dir=os.path.join(proj_dir, 'data/modulations'),
                                                ext='modulation', typ=sound.Timbre)
         config.modulation_store = modulation_store
+
+    def load_track_images(self, proj_dir):
+        track_image_store = gtk_utils.FileStore(storage_dir=os.path.join(proj_dir, 'data/track_images'),
+                                               ext='track_image', typ=image.Image)
+        config.track_image_store = track_image_store
 
 
     ######### UI signals ###############################################################################################

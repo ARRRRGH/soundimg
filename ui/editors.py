@@ -336,6 +336,7 @@ class _ApplyBrushMenu(Gtk.Box):
 
         self.size_scale.set_range(1, config.params.image_width)
         self.size_scale.set_increments(1, 1)
+        self.size_scale.set_digits(0)
         self.size_scale.set_value_pos(Gtk.PositionType.RIGHT)
 
         # define the repeater
@@ -430,7 +431,8 @@ class _ColorAndModeMenu(Gtk.HBox):
         self.weight_scale = Gtk.Scale()
         self.weight_scale.connect('value-changed', self.on_weight_scale_value_changed)
         self.weight_scale.set_range(0, 1)
-        self.weight_scale.set_increments(0.001, 0.001)
+        self.weight_scale.set_increments(0.01, 0.1)
+        self.weight_scale.set_digits(2)
         self.weight_scale.set_value_pos(Gtk.PositionType.RIGHT)
 
         self.cm_content_area = Gtk.HBox()
@@ -713,7 +715,7 @@ class _BrushEditor(Gtk.VBox):
             pass
 
 
-class BrushWindow(Gtk.Box):
+class DrawingWindow(Gtk.Box):
 
     __gsignals__ = {'set-new-current-brush': (GObject.SignalFlags.RUN_LAST, None, [GObject.TYPE_PYOBJECT])}
 
@@ -814,7 +816,7 @@ class BufferEditor(TrackEditor):
 class InstrumentEditor(TrackEditor):
     __gsignals__ = {"reset_track": (GObject.SignalFlags.RUN_LAST, None, [GObject.TYPE_PYOBJECT])}
 
-    def __init__(self, track, wt=None, min_dims=None):
+    def __init__(self, track, wt=None, min_dims=None, *args, **kwargs):
         TrackEditor.__init__(self)
 
         self.track = track
@@ -825,7 +827,7 @@ class InstrumentEditor(TrackEditor):
         else:
             self.wave_table = wt
 
-        coll_window = base_widgets.CollapsingSectionWindow(min_dims=min_dims)
+        coll_window = base_widgets.CollapsingSectionWindow(min_dims=min_dims, *args, **kwargs)
         self.add(coll_window)
 
         # set wave table editor
@@ -949,7 +951,7 @@ class ModulationTable(Gtk.VBox):
         add_button = imaging.NavigationToolButton('Add', 'Add other wave table', 'add', self.add_timbre)
         remove_button = imaging.NavigationToolButton('Remove', 'Remove constituent', 'remove', self.remove_timbre)
         save_button = imaging.NavigationToolButton('Save', 'Save Modulation Table', 'save', self.save)
-        import_button = imaging.NavigationToolButton('Import', 'Import Modulation Table', 'reload', self.import_timbre)
+        import_button = imaging.NavigationToolButton('Import', 'Import Modulation Table', 'import', self.import_timbre)
 
         self.action_toolbar = Gtk.Toolbar()
         self.action_toolbar.insert(add_button, -1)
@@ -1224,17 +1226,15 @@ class _FrequencyMapEditor(GraphEditor):
     def draw_map(self, ax, data, **kwargs):
         coords, coords_smoothed = data
         ys, xs = coords
-        container = ax.bar(xs, ys)
-        return container
+        line, = ax.step(xs, ys)
+        return line
 
     def update_map(self, ax, artists, data):
         coords, coords_smoothed = data
         ys, xs = coords
-        container = artists
-        for i, rectangle in enumerate(container):
-            rectangle.set_height(ys[i])
-
-        return container
+        line = artists
+        line.set_ydata(ys)
+        return line
 
 
 class FrequencyMapArrayEditor(TrackEditor):
@@ -1344,3 +1344,7 @@ class BufferView(imaging.UpdatedGraphPlot):
         else:
             self.refresh_data_obj(self.buffer_graph_left)
             self.refresh_data_obj(self.buffer_graph_right)
+
+
+class ColorSyntaxEditor(Gtk.Box):
+    pass
