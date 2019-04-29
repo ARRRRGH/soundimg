@@ -227,7 +227,7 @@ class FilterMode(ApplyMode):
         shape = (weights.shape[0], weights.shape[1], img.shape[2])
         bg_orig = np.reshape(img[mask], shape).astype('float64')
 
-        br = py_utils.ImageHandler.Filter(self.filter_type, bg.astype('uint8'),
+        br = py_utils.ImageHandler.Filter(self.filter_type, bg_orig.astype('uint8'),
                                                  self.size, self.axis).reshape(shape).astype('float64')
 
         s = np.sum(bg_orig, axis=2) / 3
