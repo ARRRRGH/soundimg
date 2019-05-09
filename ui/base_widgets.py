@@ -386,6 +386,7 @@ class SettingsGrid(Gtk.Grid):
         Gtk.Grid.__init__(self)
         self.obj = obj
         self.ranges = {}
+        self.formats = {}
 
         self.set_row_spacing(config.default_rowspacing)
         self.set_column_spacing(config.default_colspacing)
@@ -406,6 +407,8 @@ class SettingsGrid(Gtk.Grid):
                 if mode_kwargs is not None:
                     if 'range' in mode_kwargs.keys():
                         self.ranges[var] = mode_kwargs['range']
+                    if 'format' in mode_kwargs.keys():
+                        self.formats[var] = mode_kwargs['format']
 
             elif mode == 'scale':
                 scale = Gtk.Scale()
@@ -436,7 +439,7 @@ class SettingsGrid(Gtk.Grid):
 
                             store.add_to_store(item, name)
 
-            elif mode == 'switch' :
+            elif mode == 'switch':
                 switch = Gtk.Switch()
                 self.sources[switch] = var, typ
                 switch.connect("notify::active", self.on_switch_activated)
@@ -457,6 +460,9 @@ class SettingsGrid(Gtk.Grid):
         if var in self.ranges.keys():
             new = max(self.ranges[var][0], min(self.ranges[var][1], new))
             source.set_text(str(new))
+
+        if var in self.formats.keys():
+            new = self.formats[var](new)
 
         setattr(self.obj, var, new)
 
