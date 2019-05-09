@@ -1,6 +1,7 @@
 import run_time.py_utils as py_utils
 import data_structures.image as image
 import data_structures.brush as brush
+import data_structures.scales as scales
 import ui.base_widgets as base_widgets
 import ui.gtk_utils as gtk_utils
 
@@ -1275,6 +1276,40 @@ class FrequencyMapArrayEditor(TrackEditor):
 
     def update(self):
         self.emit('reset_track', self.track)
+
+
+class StandardScaleEditor(Gtk.VBox):
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+
+        store = config.standard_scale_store
+
+        self.combo = base_widgets.StoreComboBox(store, info_button=False, import_button=False)
+        self.combo.connect('changed', self.on_combo_changed)
+
+        self.grid = Gtk.Grid()
+        self.add(self.grid)
+
+        self.grid.attach(Gtk.Label('Scale'), 0, 0, 1, 1)
+        self.grid.attach(self.combo, 1, 0, 1, 1)
+
+        self.grid.set_row_spacing(config.default_rowspacing)
+        self.grid.set_column_spacing(config.default_colspacing)
+
+    def on_combo_changed(self, *args, **kwargs):
+        active_scale_setter = self.combo.get_active_value().settings_table()
+        try:
+            self.grid.remove(self.grid.get_child_at(1, 1))
+        except TypeError:
+            pass
+
+        self.grid.attach(active_scale_setter, 1, 1, 1, 1)
+        self.show_all()
+
+    def get(self):
+        active_scale = self.combo.get_active_value()
+        return active_scale.set().get()
+
 
 
 class BufferView(imaging.UpdatedGraphPlot):

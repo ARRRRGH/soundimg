@@ -325,8 +325,4 @@ class FrequencyMap(Graph):
         return self.get_raw_ys()
 
 
-class LinearFrequencyMap(FrequencyMap):
-    def __init__(self, length):
-        ys = np.linspace(200, 400, length)
-        xs = ys
-        FrequencyMap.__init__(self, ys=ys, xs=xs, name='LinearFrequencyMap')
+

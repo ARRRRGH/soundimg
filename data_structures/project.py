@@ -63,13 +63,14 @@ class ProjectData(object):
         dialog = base_widgets.ResponseDialog('New Track', config.main_window, new_track_widget)
 
         response = dialog.run()
+
+        track = None
+        if response == Gtk.ResponseType.OK and new_track_widget.track is not None:
+            track = new_track_widget.track
+            self.tracks.append(track)
         dialog.destroy()
 
-        if response == Gtk.ResponseType.OK and new_track_widget.track is not None:
-            self.tracks.append(new_track_widget.track)
-            return new_track_widget.track
-
-        return None
+        return track
 
 
 class ProjectParams(object):
@@ -256,29 +257,42 @@ class NewTrackWidget(Gtk.VBox):
 
         label = Gtk.Label('Either specify number of px in y-direction and define the frequency mapping in the '
                           'options or choose from exisiting mappings')
-        stack = Gtk.Stack()
-
+        self.stack = Gtk.Stack()
         self.add(label)
-        self.add(stack)
+
+        self.stack_switcher = Gtk.StackSwitcher()
+        self.stack_switcher.set_stack(self.stack)
+        self.pack_start(self.stack_switcher, False, False, config.default_rowspacing)
+        self.stack_switcher.props.halign = Gtk.Align.CENTER
+
+        self.add(self.stack)
 
         # manual freq_map_array option page
         self.manual_freq_mapping_option_page = Gtk.VBox()
-        stack.add_named(self.manual_freq_mapping_option_page, 'Manually Specify Frequency Mapping')
+        self.stack.add_titled(self.manual_freq_mapping_option_page, 'manual_scale', 'Manual Scale')
 
         self.px_entry = Gtk.Entry()
         self.px_entry.connect('changed', self.on_px_entry_changed)
         self.manual_freq_mapping_option_page.add(self.px_entry)
 
         # existing freq map option page
-        self.existing_freq_mapping_option_page = Gtk.VBox()
-        stack.add_named(self.existing_freq_mapping_option_page, 'Choose Existing Frequency Mapping')
+        self.existing_freq_mapping_option_page = editors.StandardScaleEditor()
+        self.stack.add_titled(self.existing_freq_mapping_option_page, 'standard_scale', 'Standard Scales')
 
         self.freq_map_array_editor = None
-        self.track = None
+        self._track_manual = None
+
+    @property
+    def track(self):
+        active_child = self.stack.get_visible_child_name()
+        if active_child == 'manual_scale':
+            return self._track_manual
+        elif active_child == 'standard_scale':
+            return self.create_standard_scale()
 
     def on_px_entry_changed(self, entry):
         px = gtk_utils.read_entry(entry, int)
-        self.track = Track(self.params, dims=(px, config.params.image_width))
+        self._track_manual = Track(self.params, dims=(px, config.params.image_width))
 
         if self.freq_map_array_editor is None:
             self.freq_map_array_editor = editors.FrequencyMapArrayEditor(self.track)
@@ -287,6 +301,12 @@ class NewTrackWidget(Gtk.VBox):
             self.manual_freq_mapping_option_page.remove(self.freq_map_array_editor)
             self.freq_map_array_editor = editors.FrequencyMapArrayEditor(self.track)
             self.manual_freq_mapping_option_page.add(self.freq_map_array_editor)
+
+    def create_standard_scale(self):
+        freq_map = self.existing_freq_mapping_option_page.get()
+        track = Track(self.params, dims=(len(freq_map.xs), config.params.image_width))
+        track.freq_map_array.map_tuples = [sound.FrequencyMapTuple(freq_map)]
+        return track
 
 
 class StartMenu(Gtk.Dialog):
@@ -324,7 +344,7 @@ class StartMenu(Gtk.Dialog):
         self.stack_switcher.set_stack(self.stack)
         vbox = Gtk.VBox()
 
-        vbox.pack_start(self.stack_switcher, False, False, 5)
+        vbox.pack_start(self.stack_switcher, False, False, config.default_rowspacing)
         self.stack_switcher.props.halign = Gtk.Align.CENTER
         vbox.pack_start(self.stack, True, True, 5)
 

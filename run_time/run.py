@@ -7,6 +7,7 @@ import data_structures.sound as sound
 import data_structures.brush_modes as brush_modes
 import data_structures.wav_tables as wav_tables
 import data_structures.image as image
+import data_structures.scales as scales
 import ui.editors as editors
 import ui.gtk_utils as gtk_utils
 import ui.widgets as widgets
@@ -285,6 +286,7 @@ class AppWindow(Gtk.ApplicationWindow):
         proj.dir = project_dir
 
         self.load_brush_modes()
+        self.load_standard_scales()
         self.load_brushes(project_dir)
         self.load_wave_tables(project_dir)
         self.load_instruments(project_dir)
@@ -293,6 +295,15 @@ class AppWindow(Gtk.ApplicationWindow):
         self.load_track_images(project_dir)
 
         return proj
+
+    def load_standard_scales(self):
+        config.standard_scale_store = gtk_utils.BaseStore(scales.StandardScaleToMap)
+        config.standard_scale_store.add_to_store(scales.LinearFrequencyMap(), name='Linear')
+        config.standard_scale_store.add_to_store(scales.PythagoreanScaleMap(), name='Pythagorean')
+        config.standard_scale_store.add_to_store(scales.DiatonicScaleMap(), name='Diatonic')
+        config.standard_scale_store.add_to_store(scales.ChromaticScaleMap(), name='Chromatic')
+        config.standard_scale_store.add_to_store(scales.TemperedScaleMap(), name='Tempered')
+
 
     def load_brush_modes(self):
         brush_mode_store = gtk_utils.FileStore(storage_dir=None, ext=None, typ=brush_modes.ApplyMode)

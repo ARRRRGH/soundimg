@@ -1,3 +1,4 @@
+import data_structures.scales
 import run_time.config as config
 import synthesis.synth as synth
 import data_structures.graph as graph
@@ -149,6 +150,9 @@ class FrequencyMapTuple(object):
         """
         self.start_map = start_map
         self.end_map = end_map
+        if self.end_map is None:
+            self.end_map = self.start_map.duplicate()
+
         self.transition = transition
         self._is_unique = self.end_map is None or self.transition is None
 
@@ -230,7 +234,7 @@ class FrequencyMapArray(data_utils.StoreInterface):
     def add_tuple(self, tuple, freq_map):
         new_map = freq_map
         if new_map is None:
-            new_map = graph.LinearFrequencyMap(self.track.height)
+            new_map = data_structures.scales.LinearFrequencyMap(self.track.height).set().get()
         new_transition = FrequencyMapTransition()
 
         if tuple is not None:
@@ -239,7 +243,7 @@ class FrequencyMapArray(data_utils.StoreInterface):
             self.map_tuples.insert(ind, new_tuple)
             tuple.start_map = new_map
         else:
-            new_start_map = graph.LinearFrequencyMap(self.track.height)
+            new_start_map = data_structures.scales.LinearFrequencyMap(self.track.height).set().get()
             new_tuple = FrequencyMapTuple(new_start_map, new_map, new_transition)
             self.map_tuples.append(new_tuple)
 

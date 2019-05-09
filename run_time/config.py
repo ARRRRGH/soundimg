@@ -8,6 +8,7 @@ class Params:
         self.image_width = 100
         self.block_length = 3000
         self.channels = 2
+        self.concert_a = 440
 
     @property
     def buffer_nr_points_displayed_per_px(self):
@@ -86,6 +87,7 @@ freq_mappings_store = None
 modulation_store = None
 brush_mode_store = None
 track_image_store = None
+standard_scale_store = None
 
 # other settings
 time_pointer_callback_time = 20
